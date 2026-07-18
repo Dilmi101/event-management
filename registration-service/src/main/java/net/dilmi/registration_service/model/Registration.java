@@ -1,0 +1,57 @@
+package net.dilmi.registration_service.model;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.data.relational.core.mapping.Column;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Table("registrations")
+public class Registration {
+
+    @Id
+    private UUID registrationId;
+
+    @Column("event_id")
+    private UUID eventId;
+
+    private String name;
+    private String email;
+
+    @Column("ticket_count")
+    private Integer ticketCount;
+
+    @Column("registered_at")
+    private LocalDateTime registeredAt;
+
+    public Registration() {}
+
+    public Registration(UUID registrationId, UUID eventId, String name, String email,
+                        Integer ticketCount, LocalDateTime registeredAt) {
+        this.registrationId = registrationId;
+        this.eventId = eventId;
+        this.name = name;
+        this.email = email;
+        this.ticketCount = ticketCount;
+        this.registeredAt = registeredAt;
+    }
+
+    public UUID getRegistrationId() { return registrationId; }
+    public void setRegistrationId(UUID registrationId) { this.registrationId = registrationId; }
+
+    public UUID getEventId() { return eventId; }
+    public void setEventId(UUID eventId) { this.eventId = eventId; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public Integer getTicketCount() { return ticketCount; }
+    public void setTicketCount(Integer ticketCount) { this.ticketCount = ticketCount; }
+
+    public LocalDateTime getRegisteredAt() { return registeredAt; }
+    public void setRegisteredAt(LocalDateTime registeredAt) { this.registeredAt = registeredAt; }
+}

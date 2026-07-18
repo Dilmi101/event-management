@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "net.dilmi.registration_service.grpc";
+option java_outer_classname = "RegistrationServiceProto";
+
+package registration_service;
+
+import "google/protobuf/timestamp.proto";
+
+message Registration {
+  string registration_id = 1;
+  string event_id = 2;
+  string name = 3;
+  string email = 4;
+  int32 ticket_count = 5;
+  google.protobuf.Timestamp registered_at = 6;
+}
+
+message GetRegistrationRequest {
+  string registration_id = 1;
+}
+
+message ListRegistrationsRequest {}
+
+message ListRegistrationsResponse {
+  repeated Registration registrations = 1;
+}
+
+message CreateRegistrationRequest {
+  string event_id = 1;
+  string name = 2;
+  string email = 3;
+  int32 ticket_count = 4;
+}
+
+message UpdateRegistrationRequest {
+  string registration_id = 1;
+  string event_id = 2;
+  string name = 3;
+  string email = 4;
+  int32 ticket_count = 5;
+}
+
+message DeleteRegistrationRequest {
+  string registration_id = 1;
+}
+
+message DeleteRegistrationResponse {
+  bool success = 1;
+}
+
+service RegistrationService {
+  rpc GetRegistration(GetRegistrationRequest) returns (Registration);
+  rpc ListRegistrations(ListRegistrationsRequest) returns (ListRegistrationsResponse);
+  rpc CreateRegistration(CreateRegistrationRequest) returns (Registration);
+  rpc UpdateRegistration(UpdateRegistrationRequest) returns (Registration);
+  rpc DeleteRegistration(DeleteRegistrationRequest) returns (DeleteRegistrationResponse);
+}

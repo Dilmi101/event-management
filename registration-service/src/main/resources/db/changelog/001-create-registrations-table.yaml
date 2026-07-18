@@ -1,0 +1,44 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-registrations-table
+      author: dilmi
+      changes:
+        - createTable:
+            tableName: registrations
+            columns:
+              - column:
+                  name: registration_id
+                  type: uuid
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: event_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: ticket_count
+                  type: int
+                  defaultValueNumeric: 1
+                  constraints:
+                    nullable: false
+              - column:
+                  name: registered_at
+                  type: timestamp
+                  defaultValueComputed: current_timestamp
+        - sql:
+            sql: ALTER TABLE registrations ADD CONSTRAINT chk_ticket_count CHECK (ticket_count > 0)
+        - sql:
+            sql: ALTER TABLE registrations ADD CONSTRAINT uq_email_event UNIQUE (email, event_id)
