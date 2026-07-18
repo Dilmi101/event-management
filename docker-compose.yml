@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: docker.io/library/postgres:18.4
+    container_name: event-management-db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/18/data
+      - ./docker/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  event-service:
+    build:
+      context: ./event-service
+      dockerfile: Dockerfile
+    container_name: event-service
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+      - "9091:9091"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/eventdb
+      DB_USERNAME: ${EVENT_DB_USER}
+      DB_PASSWORD: ${EVENT_DB_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
