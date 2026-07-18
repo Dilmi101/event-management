@@ -1,0 +1,62 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-create-sessions-table
+      author: dilmi
+      changes:
+        - createTable:
+            tableName: sessions
+            columns:
+              - column:
+                  name: session_id
+                  type: uuid
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: track_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: event_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: day
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: session_title
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: speaker_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: start_time
+                  type: time
+                  constraints:
+                    nullable: false
+              - column:
+                  name: end_time
+                  type: time
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: current_timestamp
+        - addForeignKeyConstraint:
+            baseTableName: sessions
+            baseColumnNames: track_id
+            referencedTableName: tracks
+            referencedColumnNames: track_id
+            constraintName: fk_sessions_track
+        - sql:
+            sql: ALTER TABLE sessions ADD CONSTRAINT chk_times CHECK (end_time > start_time)
