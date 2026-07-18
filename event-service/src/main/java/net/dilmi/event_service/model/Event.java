@@ -16,7 +16,19 @@ public class Event {
     @Id
     private UUID eventId;
     private String title;
-    private String venue;
+    private String description;
+
+    @Column("venue_name")
+    private String venueName;
+
+    @Column("venue_street")
+    private String venueStreet;
+
+    @Column("venue_city")
+    private String venueCity;
+
+    @Column("venue_phone")
+    private String venuePhone;
 
     @Column("event_date")
     private LocalDate eventDate;
@@ -40,12 +52,18 @@ public class Event {
 
     public Event() {}
 
-    public Event(UUID eventId, String title, String venue, LocalDate eventDate,
-                 LocalTime eventTime, BigDecimal ticketPrice, Integer capacity,
-                 Integer seatsAvailable, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Event(UUID eventId, String title, String description, String venueName,
+                 String venueStreet, String venueCity, String venuePhone,
+                 LocalDate eventDate, LocalTime eventTime, BigDecimal ticketPrice,
+                 Integer capacity, Integer seatsAvailable,
+                 LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.eventId = eventId;
         this.title = title;
-        this.venue = venue;
+        this.description = description;
+        this.venueName = venueName;
+        this.venueStreet = venueStreet;
+        this.venueCity = venueCity;
+        this.venuePhone = venuePhone;
         this.eventDate = eventDate;
         this.eventTime = eventTime;
         this.ticketPrice = ticketPrice;
@@ -61,8 +79,20 @@ public class Event {
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
 
-    public String getVenue() { return venue; }
-    public void setVenue(String venue) { this.venue = venue; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public String getVenueName() { return venueName; }
+    public void setVenueName(String venueName) { this.venueName = venueName; }
+
+    public String getVenueStreet() { return venueStreet; }
+    public void setVenueStreet(String venueStreet) { this.venueStreet = venueStreet; }
+
+    public String getVenueCity() { return venueCity; }
+    public void setVenueCity(String venueCity) { this.venueCity = venueCity; }
+
+    public String getVenuePhone() { return venuePhone; }
+    public void setVenuePhone(String venuePhone) { this.venuePhone = venuePhone; }
 
     public LocalDate getEventDate() { return eventDate; }
     public void setEventDate(LocalDate eventDate) { this.eventDate = eventDate; }

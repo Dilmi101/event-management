@@ -1,0 +1,26 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-alter-events-table
+      author: dilmi
+      changes:
+        - dropColumn:
+            tableName: events
+            columnName: venue
+        - addColumn:
+            tableName: events
+            columns:
+              - column:
+                  name: description
+                  type: text
+              - column:
+                  name: venue_name
+                  type: varchar(255)
+              - column:
+                  name: venue_street
+                  type: varchar(255)
+              - column:
+                  name: venue_city
+                  type: varchar(255)
+              - column:
+                  name: venue_phone
+                  type: varchar(50)

@@ -11,10 +11,12 @@ import "google/protobuf/timestamp.proto";
 message Registration {
   string registration_id = 1;
   string event_id = 2;
-  string name = 3;
-  string email = 4;
-  int32 ticket_count = 5;
-  google.protobuf.Timestamp registered_at = 6;
+  string first_name = 3;
+  string last_name = 4;
+  string phone = 5;
+  string email = 6;
+  int32 ticket_count = 7;
+  google.protobuf.Timestamp registered_at = 8;
 }
 
 message GetRegistrationRequest {
@@ -29,17 +31,21 @@ message ListRegistrationsResponse {
 
 message CreateRegistrationRequest {
   string event_id = 1;
-  string name = 2;
-  string email = 3;
-  int32 ticket_count = 4;
+  string first_name = 2;
+  string last_name = 3;
+  string phone = 4;
+  string email = 5;
+  int32 ticket_count = 6;
 }
 
 message UpdateRegistrationRequest {
   string registration_id = 1;
   string event_id = 2;
-  string name = 3;
-  string email = 4;
-  int32 ticket_count = 5;
+  string first_name = 3;
+  string last_name = 4;
+  string phone = 5;
+  string email = 6;
+  int32 ticket_count = 7;
 }
 
 message DeleteRegistrationRequest {

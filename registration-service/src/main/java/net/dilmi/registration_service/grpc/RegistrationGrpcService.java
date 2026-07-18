@@ -43,7 +43,9 @@ public class RegistrationGrpcService extends RegistrationServiceGrpc.Registratio
     public void createRegistration(CreateRegistrationRequest request, io.grpc.stub.StreamObserver<Registration> responseObserver) {
         net.dilmi.registration_service.model.Registration registration = new net.dilmi.registration_service.model.Registration();
         registration.setEventId(UUID.fromString(request.getEventId()));
-        registration.setName(request.getName());
+        registration.setFirstName(request.getFirstName());
+        registration.setLastName(request.getLastName());
+        registration.setPhone(request.getPhone());
         registration.setEmail(request.getEmail());
         registration.setTicketCount(request.getTicketCount());
 
@@ -57,7 +59,9 @@ public class RegistrationGrpcService extends RegistrationServiceGrpc.Registratio
         UUID registrationId = UUID.fromString(request.getRegistrationId());
         net.dilmi.registration_service.model.Registration registration = new net.dilmi.registration_service.model.Registration();
         registration.setEventId(UUID.fromString(request.getEventId()));
-        registration.setName(request.getName());
+        registration.setFirstName(request.getFirstName());
+        registration.setLastName(request.getLastName());
+        registration.setPhone(request.getPhone());
         registration.setEmail(request.getEmail());
         registration.setTicketCount(request.getTicketCount());
 
@@ -79,8 +83,10 @@ public class RegistrationGrpcService extends RegistrationServiceGrpc.Registratio
         Registration.Builder builder = Registration.newBuilder()
                 .setRegistrationId(entity.getRegistrationId().toString())
                 .setEventId(entity.getEventId().toString())
-                .setName(entity.getName())
-                .setEmail(entity.getEmail())
+                .setFirstName(entity.getFirstName() != null ? entity.getFirstName() : "")
+                .setLastName(entity.getLastName() != null ? entity.getLastName() : "")
+                .setPhone(entity.getPhone() != null ? entity.getPhone() : "")
+                .setEmail(entity.getEmail() != null ? entity.getEmail() : "")
                 .setTicketCount(entity.getTicketCount());
 
         if (entity.getRegisteredAt() != null) {

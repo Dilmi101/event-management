@@ -1,0 +1,34 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-create-contact-messages-table
+      author: dilmi
+      changes:
+        - createTable:
+            tableName: contact_messages
+            columns:
+              - column:
+                  name: message_id
+                  type: uuid
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: message
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: received_at
+                  type: timestamp
+                  defaultValueComputed: current_timestamp

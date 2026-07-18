@@ -1,3 +1,9 @@
 databaseChangeLog:
   - include:
       file: db/changelog/001-create-events-table.yaml
+  - include:
+      file: db/changelog/002-alter-events-table.yaml
+  - include:
+      file: db/changelog/003-create-sponsors-table.yaml
+  - include:
+      file: db/changelog/004-create-contact-messages-table.yaml

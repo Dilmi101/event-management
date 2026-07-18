@@ -53,7 +53,8 @@ message Session {
   string speaker_name = 6;
   string start_time = 7;
   string end_time = 8;
-  google.protobuf.Timestamp created_at = 9;
+  string room = 9;
+  google.protobuf.Timestamp created_at = 10;
 }
 
 message GetSessionRequest {
@@ -74,6 +75,7 @@ message CreateSessionRequest {
   string speaker_name = 5;
   string start_time = 6;
   string end_time = 7;
+  string room = 8;
 }
 
 message UpdateSessionRequest {
@@ -85,6 +87,7 @@ message UpdateSessionRequest {
   string speaker_name = 6;
   string start_time = 7;
   string end_time = 8;
+  string room = 9;
 }
 
 message DeleteSessionRequest {
@@ -109,4 +112,58 @@ service SessionService {
   rpc CreateSession(CreateSessionRequest) returns (Session);
   rpc UpdateSession(UpdateSessionRequest) returns (Session);
   rpc DeleteSession(DeleteSessionRequest) returns (DeleteSessionResponse);
+}
+
+// Speaker messages
+message Speaker {
+  string speaker_id = 1;
+  string event_id = 2;
+  string name = 3;
+  string role = 4;
+  string bio = 5;
+  string photo_url = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+message GetSpeakerRequest {
+  string speaker_id = 1;
+}
+
+message ListSpeakersRequest {}
+
+message ListSpeakersResponse {
+  repeated Speaker speakers = 1;
+}
+
+message CreateSpeakerRequest {
+  string event_id = 1;
+  string name = 2;
+  string role = 3;
+  string bio = 4;
+  string photo_url = 5;
+}
+
+message UpdateSpeakerRequest {
+  string speaker_id = 1;
+  string event_id = 2;
+  string name = 3;
+  string role = 4;
+  string bio = 5;
+  string photo_url = 6;
+}
+
+message DeleteSpeakerRequest {
+  string speaker_id = 1;
+}
+
+message DeleteSpeakerResponse {
+  bool success = 1;
+}
+
+service SpeakerService {
+  rpc GetSpeaker(GetSpeakerRequest) returns (Speaker);
+  rpc ListSpeakers(ListSpeakersRequest) returns (ListSpeakersResponse);
+  rpc CreateSpeaker(CreateSpeakerRequest) returns (Speaker);
+  rpc UpdateSpeaker(UpdateSpeakerRequest) returns (Speaker);
+  rpc DeleteSpeaker(DeleteSpeakerRequest) returns (DeleteSpeakerResponse);
 }

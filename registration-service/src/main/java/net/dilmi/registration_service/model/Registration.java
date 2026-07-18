@@ -16,7 +16,13 @@ public class Registration {
     @Column("event_id")
     private UUID eventId;
 
-    private String name;
+    @Column("first_name")
+    private String firstName;
+
+    @Column("last_name")
+    private String lastName;
+
+    private String phone;
     private String email;
 
     @Column("ticket_count")
@@ -27,11 +33,13 @@ public class Registration {
 
     public Registration() {}
 
-    public Registration(UUID registrationId, UUID eventId, String name, String email,
-                        Integer ticketCount, LocalDateTime registeredAt) {
+    public Registration(UUID registrationId, UUID eventId, String firstName, String lastName,
+                        String phone, String email, Integer ticketCount, LocalDateTime registeredAt) {
         this.registrationId = registrationId;
         this.eventId = eventId;
-        this.name = name;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.phone = phone;
         this.email = email;
         this.ticketCount = ticketCount;
         this.registeredAt = registeredAt;
@@ -43,8 +51,14 @@ public class Registration {
     public UUID getEventId() { return eventId; }
     public void setEventId(UUID eventId) { this.eventId = eventId; }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public String getFirstName() { return firstName; }
+    public void setFirstName(String firstName) { this.firstName = firstName; }
+
+    public String getLastName() { return lastName; }
+    public void setLastName(String lastName) { this.lastName = lastName; }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }

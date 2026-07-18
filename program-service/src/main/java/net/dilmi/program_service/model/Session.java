@@ -34,6 +34,8 @@ public class Session {
     @Column("end_time")
     private LocalTime endTime;
 
+    private String room;
+
     @Column("created_at")
     private LocalDateTime createdAt;
 
@@ -41,7 +43,7 @@ public class Session {
 
     public Session(UUID sessionId, UUID trackId, UUID eventId, Integer day,
                    String sessionTitle, String speakerName, LocalTime startTime,
-                   LocalTime endTime, LocalDateTime createdAt) {
+                   LocalTime endTime, String room, LocalDateTime createdAt) {
         this.sessionId = sessionId;
         this.trackId = trackId;
         this.eventId = eventId;
@@ -50,6 +52,7 @@ public class Session {
         this.speakerName = speakerName;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.room = room;
         this.createdAt = createdAt;
     }
 
@@ -76,6 +79,9 @@ public class Session {
 
     public LocalTime getEndTime() { return endTime; }
     public void setEndTime(LocalTime endTime) { this.endTime = endTime; }
+
+    public String getRoom() { return room; }
+    public void setRoom(String room) { this.room = room; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

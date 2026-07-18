@@ -46,7 +46,11 @@ public class EventGrpcService extends EventServiceGrpc.EventServiceImplBase {
     public void createEvent(CreateEventRequest request, io.grpc.stub.StreamObserver<Event> responseObserver) {
         net.dilmi.event_service.model.Event event = new net.dilmi.event_service.model.Event();
         event.setTitle(request.getTitle());
-        event.setVenue(request.getVenue());
+        event.setDescription(request.getDescription());
+        event.setVenueName(request.getVenueName());
+        event.setVenueStreet(request.getVenueStreet());
+        event.setVenueCity(request.getVenueCity());
+        event.setVenuePhone(request.getVenuePhone());
         event.setEventDate(LocalDate.parse(request.getEventDate()));
         event.setEventTime(LocalTime.parse(request.getEventTime()));
         event.setTicketPrice(BigDecimal.valueOf(request.getTicketPrice()));
@@ -63,7 +67,11 @@ public class EventGrpcService extends EventServiceGrpc.EventServiceImplBase {
         UUID eventId = UUID.fromString(request.getEventId());
         net.dilmi.event_service.model.Event event = new net.dilmi.event_service.model.Event();
         event.setTitle(request.getTitle());
-        event.setVenue(request.getVenue());
+        event.setDescription(request.getDescription());
+        event.setVenueName(request.getVenueName());
+        event.setVenueStreet(request.getVenueStreet());
+        event.setVenueCity(request.getVenueCity());
+        event.setVenuePhone(request.getVenuePhone());
         event.setEventDate(LocalDate.parse(request.getEventDate()));
         event.setEventTime(LocalTime.parse(request.getEventTime()));
         event.setTicketPrice(BigDecimal.valueOf(request.getTicketPrice()));
@@ -87,8 +95,12 @@ public class EventGrpcService extends EventServiceGrpc.EventServiceImplBase {
     private Event toProto(net.dilmi.event_service.model.Event entity) {
         Event.Builder builder = Event.newBuilder()
                 .setEventId(entity.getEventId().toString())
-                .setTitle(entity.getTitle())
-                .setVenue(entity.getVenue())
+                .setTitle(entity.getTitle() != null ? entity.getTitle() : "")
+                .setDescription(entity.getDescription() != null ? entity.getDescription() : "")
+                .setVenueName(entity.getVenueName() != null ? entity.getVenueName() : "")
+                .setVenueStreet(entity.getVenueStreet() != null ? entity.getVenueStreet() : "")
+                .setVenueCity(entity.getVenueCity() != null ? entity.getVenueCity() : "")
+                .setVenuePhone(entity.getVenuePhone() != null ? entity.getVenuePhone() : "")
                 .setEventDate(entity.getEventDate().toString())
                 .setEventTime(entity.getEventTime().toString())
                 .setTicketPrice(entity.getTicketPrice().doubleValue())

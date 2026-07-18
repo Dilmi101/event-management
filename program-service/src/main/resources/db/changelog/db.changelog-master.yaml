@@ -3,3 +3,7 @@ databaseChangeLog:
       file: db/changelog/001-create-tracks-table.yaml
   - include:
       file: db/changelog/002-create-sessions-table.yaml
+  - include:
+      file: db/changelog/003-create-speakers-table.yaml
+  - include:
+      file: db/changelog/004-alter-sessions-add-room.yaml

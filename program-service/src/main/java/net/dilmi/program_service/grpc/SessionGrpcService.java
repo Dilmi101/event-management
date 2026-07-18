@@ -50,6 +50,7 @@ public class SessionGrpcService extends SessionServiceGrpc.SessionServiceImplBas
         session.setSpeakerName(request.getSpeakerName());
         session.setStartTime(LocalTime.parse(request.getStartTime()));
         session.setEndTime(LocalTime.parse(request.getEndTime()));
+        session.setRoom(request.getRoom());
 
         net.dilmi.program_service.model.Session created = sessionService.createSession(session);
         responseObserver.onNext(toProto(created));
@@ -67,6 +68,7 @@ public class SessionGrpcService extends SessionServiceGrpc.SessionServiceImplBas
         session.setSpeakerName(request.getSpeakerName());
         session.setStartTime(LocalTime.parse(request.getStartTime()));
         session.setEndTime(LocalTime.parse(request.getEndTime()));
+        session.setRoom(request.getRoom());
 
         sessionService.updateSession(sessionId, session);
         sessionService.getSessionById(sessionId)
@@ -91,7 +93,8 @@ public class SessionGrpcService extends SessionServiceGrpc.SessionServiceImplBas
                 .setSessionTitle(entity.getSessionTitle())
                 .setSpeakerName(entity.getSpeakerName())
                 .setStartTime(entity.getStartTime().toString())
-                .setEndTime(entity.getEndTime().toString());
+                .setEndTime(entity.getEndTime().toString())
+                .setRoom(entity.getRoom() != null ? entity.getRoom() : "");
 
         if (entity.getCreatedAt() != null) {
             builder.setCreatedAt(com.google.protobuf.Timestamp.newBuilder()
