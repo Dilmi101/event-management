@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: event-service
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
+      - org.springframework.boot.liquibase.autoconfigure.LiquibaseAutoConfiguration
+  data:
+    jdbc:
+      repositories:
+        enabled: false

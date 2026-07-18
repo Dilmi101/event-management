@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "net.dilmi.event_service.grpc";
+option java_outer_classname = "EventServiceProto";
+
+package event_service;
+
+import "google/protobuf/timestamp.proto";
+
+message Event {
+  string event_id = 1;
+  string title = 2;
+  string venue = 3;
+  string event_date = 4;
+  string event_time = 5;
+  double ticket_price = 6;
+  int32 capacity = 7;
+  int32 seats_available = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+}
+
+message GetEventRequest {
+  string event_id = 1;
+}
+
+message ListEventsRequest {}
+
+message ListEventsResponse {
+  repeated Event events = 1;
+}
+
+message CreateEventRequest {
+  string title = 1;
+  string venue = 2;
+  string event_date = 3;
+  string event_time = 4;
+  double ticket_price = 5;
+  int32 capacity = 6;
+  int32 seats_available = 7;
+}
+
+message UpdateEventRequest {
+  string event_id = 1;
+  string title = 2;
+  string venue = 3;
+  string event_date = 4;
+  string event_time = 5;
+  double ticket_price = 6;
+  int32 capacity = 7;
+  int32 seats_available = 8;
+}
+
+message DeleteEventRequest {
+  string event_id = 1;
+}
+
+message DeleteEventResponse {
+  bool success = 1;
+}
+
+service EventService {
+  rpc GetEvent(GetEventRequest) returns (Event);
+  rpc ListEvents(ListEventsRequest) returns (ListEventsResponse);
+  rpc CreateEvent(CreateEventRequest) returns (Event);
+  rpc UpdateEvent(UpdateEventRequest) returns (Event);
+  rpc DeleteEvent(DeleteEventRequest) returns (DeleteEventResponse);
+}
