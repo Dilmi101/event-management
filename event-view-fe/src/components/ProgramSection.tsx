@@ -45,6 +45,7 @@ export default function ProgramSection({ sessions }: Props) {
                         src={`https://via.placeholder.com/150?text=${session.speakerName.charAt(0)}`}
                         className="img-responsive"
                         alt={session.speakerName}
+                        onError={e => { e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2230%22 r=%2220%22 fill=%22%23ccc%22/%3E%3Cellipse cx=%2250%22 cy=%2270%22 rx=%2235%22 ry=%2225%22 fill=%22%23ccc%22/%3E%3C/svg%3E' }}
                       />
                     </div>
                     <div className="col-md-10 col-sm-10">
