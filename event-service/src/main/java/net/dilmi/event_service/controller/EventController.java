@@ -39,10 +39,12 @@ public class EventController {
 
     @PutMapping("/{eventId}")
     public ResponseEntity<Event> updateEvent(@PathVariable UUID eventId, @RequestBody Event event) {
-        eventService.updateEvent(eventId, event);
-        return eventService.getEventById(eventId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        try {
+            Event updated = eventService.updateEvent(eventId, event);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{eventId}")

@@ -3,6 +3,7 @@ package net.dilmi.event_service.service;
 import net.dilmi.event_service.model.Sponsor;
 import net.dilmi.event_service.repository.SponsorRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,17 +27,23 @@ public class SponsorService {
         return sponsorRepository.findById(sponsorId);
     }
 
+    @Transactional
     public Sponsor createSponsor(Sponsor sponsor) {
-        sponsor.setSponsorId(UUID.randomUUID());
         sponsor.setCreatedAt(LocalDateTime.now());
         return sponsorRepository.save(sponsor);
     }
 
+    @Transactional
     public Sponsor updateSponsor(UUID sponsorId, Sponsor updatedSponsor) {
-        updatedSponsor.setSponsorId(sponsorId);
-        return sponsorRepository.save(updatedSponsor);
+        Sponsor existing = sponsorRepository.findById(sponsorId)
+                .orElseThrow(() -> new RuntimeException("Sponsor not found: " + sponsorId));
+        existing.setEventId(updatedSponsor.getEventId());
+        existing.setName(updatedSponsor.getName());
+        existing.setLogoUrl(updatedSponsor.getLogoUrl());
+        return sponsorRepository.save(existing);
     }
 
+    @Transactional
     public void deleteSponsor(UUID sponsorId) {
         sponsorRepository.deleteById(sponsorId);
     }

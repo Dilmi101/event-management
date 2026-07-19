@@ -62,9 +62,27 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/registrationdb
       DB_USERNAME: ${REGISTRATION_DB_USER}
       DB_PASSWORD: ${REGISTRATION_DB_PASSWORD}
+      EVENT_SERVICE_GRPC_ADDRESS: static://event-service:9091
     depends_on:
       postgres:
         condition: service_healthy
+
+  frontend:
+    build:
+      context: ./event-view-fe
+      dockerfile: Dockerfile
+      args:
+        VITE_EVENT_SERVICE_URL: ""
+        VITE_PROGRAM_SERVICE_URL: ""
+        VITE_REGISTRATION_SERVICE_URL: ""
+    container_name: event-view-fe
+    restart: unless-stopped
+    ports:
+      - "8084:80"
+    depends_on:
+      - event-service
+      - program-service
+      - registration-service
 
 volumes:
   postgres_data:

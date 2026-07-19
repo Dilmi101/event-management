@@ -78,6 +78,26 @@ service EventService {
   rpc CreateEvent(CreateEventRequest) returns (Event);
   rpc UpdateEvent(UpdateEventRequest) returns (Event);
   rpc DeleteEvent(DeleteEventRequest) returns (DeleteEventResponse);
+  rpc ReserveSeats(ReserveSeatsRequest) returns (ReserveSeatsResponse);
+  rpc ReleaseSeats(ReleaseSeatsRequest) returns (ReleaseSeatsResponse);
+}
+
+message ReserveSeatsRequest {
+  string event_id = 1;
+  int32 ticket_count = 2;
+}
+
+message ReserveSeatsResponse {
+  Event event = 1;
+}
+
+message ReleaseSeatsRequest {
+  string event_id = 1;
+  int32 ticket_count = 2;
+}
+
+message ReleaseSeatsResponse {
+  Event event = 1;
 }
 
 // Sponsor messages

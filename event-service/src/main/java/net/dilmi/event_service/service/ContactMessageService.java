@@ -3,6 +3,7 @@ package net.dilmi.event_service.service;
 import net.dilmi.event_service.model.ContactMessage;
 import net.dilmi.event_service.repository.ContactMessageRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,12 +27,13 @@ public class ContactMessageService {
         return contactMessageRepository.findById(messageId);
     }
 
+    @Transactional
     public ContactMessage createMessage(ContactMessage message) {
-        message.setMessageId(UUID.randomUUID());
         message.setReceivedAt(LocalDateTime.now());
         return contactMessageRepository.save(message);
     }
 
+    @Transactional
     public void deleteMessage(UUID messageId) {
         contactMessageRepository.deleteById(messageId);
     }

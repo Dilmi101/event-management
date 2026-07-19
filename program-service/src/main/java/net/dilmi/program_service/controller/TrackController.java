@@ -39,10 +39,12 @@ public class TrackController {
 
     @PutMapping("/{trackId}")
     public ResponseEntity<Track> updateTrack(@PathVariable UUID trackId, @RequestBody Track track) {
-        trackService.updateTrack(trackId, track);
-        return trackService.getTrackById(trackId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        try {
+            Track updated = trackService.updateTrack(trackId, track);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{trackId}")

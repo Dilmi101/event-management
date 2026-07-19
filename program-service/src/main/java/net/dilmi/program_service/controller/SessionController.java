@@ -39,10 +39,12 @@ public class SessionController {
 
     @PutMapping("/{sessionId}")
     public ResponseEntity<Session> updateSession(@PathVariable UUID sessionId, @RequestBody Session session) {
-        sessionService.updateSession(sessionId, session);
-        return sessionService.getSessionById(sessionId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        try {
+            Session updated = sessionService.updateSession(sessionId, session);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{sessionId}")

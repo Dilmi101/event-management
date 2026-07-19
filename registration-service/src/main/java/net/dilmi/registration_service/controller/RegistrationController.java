@@ -39,10 +39,12 @@ public class RegistrationController {
 
     @PutMapping("/{registrationId}")
     public ResponseEntity<Registration> updateRegistration(@PathVariable UUID registrationId, @RequestBody Registration registration) {
-        registrationService.updateRegistration(registrationId, registration);
-        return registrationService.getRegistrationById(registrationId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        try {
+            Registration updated = registrationService.updateRegistration(registrationId, registration);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{registrationId}")

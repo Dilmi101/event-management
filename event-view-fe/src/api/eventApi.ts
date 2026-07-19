@@ -1,8 +1,8 @@
 import type { Event, Sponsor, Speaker, Session, RegistrationRequest, ContactMessage } from '../types/event';
 
-const EVENT_SERVICE_URL = 'http://localhost:8081';
-const PROGRAM_SERVICE_URL = 'http://localhost:8082';
-const REGISTRATION_SERVICE_URL = 'http://localhost:8083';
+const EVENT_SERVICE_URL = import.meta.env.VITE_EVENT_SERVICE_URL ?? 'http://localhost:8081';
+const PROGRAM_SERVICE_URL = import.meta.env.VITE_PROGRAM_SERVICE_URL ?? 'http://localhost:8082';
+const REGISTRATION_SERVICE_URL = import.meta.env.VITE_REGISTRATION_SERVICE_URL ?? 'http://localhost:8083';
 
 export async function fetchEvent(eventId: string): Promise<Event> {
   const res = await fetch(`${EVENT_SERVICE_URL}/api/events/${eventId}`);

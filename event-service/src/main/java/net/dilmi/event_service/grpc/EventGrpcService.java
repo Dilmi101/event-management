@@ -92,6 +92,36 @@ public class EventGrpcService extends EventServiceGrpc.EventServiceImplBase {
         responseObserver.onCompleted();
     }
 
+    @Override
+    public void reserveSeats(ReserveSeatsRequest request, io.grpc.stub.StreamObserver<ReserveSeatsResponse> responseObserver) {
+        try {
+            UUID eventId = UUID.fromString(request.getEventId());
+            net.dilmi.event_service.model.Event updated = eventService.reserveSeats(eventId, request.getTicketCount());
+            responseObserver.onNext(ReserveSeatsResponse.newBuilder().setEvent(toProto(updated)).build());
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(
+                    io.grpc.Status.FAILED_PRECONDITION
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        }
+    }
+
+    @Override
+    public void releaseSeats(ReleaseSeatsRequest request, io.grpc.stub.StreamObserver<ReleaseSeatsResponse> responseObserver) {
+        try {
+            UUID eventId = UUID.fromString(request.getEventId());
+            net.dilmi.event_service.model.Event updated = eventService.releaseSeats(eventId, request.getTicketCount());
+            responseObserver.onNext(ReleaseSeatsResponse.newBuilder().setEvent(toProto(updated)).build());
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(
+                    io.grpc.Status.NOT_FOUND
+                            .withDescription(e.getMessage())
+                            .asRuntimeException());
+        }
+    }
+
     private Event toProto(net.dilmi.event_service.model.Event entity) {
         Event.Builder builder = Event.newBuilder()
                 .setEventId(entity.getEventId().toString())

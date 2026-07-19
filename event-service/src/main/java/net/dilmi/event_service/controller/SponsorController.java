@@ -39,10 +39,12 @@ public class SponsorController {
 
     @PutMapping("/{sponsorId}")
     public ResponseEntity<Sponsor> updateSponsor(@PathVariable UUID sponsorId, @RequestBody Sponsor sponsor) {
-        sponsorService.updateSponsor(sponsorId, sponsor);
-        return sponsorService.getSponsorById(sponsorId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        try {
+            Sponsor updated = sponsorService.updateSponsor(sponsorId, sponsor);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{sponsorId}")

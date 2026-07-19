@@ -18,6 +18,14 @@ repositories {
 	mavenCentral()
 }
 
+sourceSets {
+	main {
+		proto {
+			srcDir '../event-service/src/main/proto'
+		}
+	}
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'

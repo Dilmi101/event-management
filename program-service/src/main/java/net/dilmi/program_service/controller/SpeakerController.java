@@ -39,10 +39,12 @@ public class SpeakerController {
 
     @PutMapping("/{speakerId}")
     public ResponseEntity<Speaker> updateSpeaker(@PathVariable UUID speakerId, @RequestBody Speaker speaker) {
-        speakerService.updateSpeaker(speakerId, speaker);
-        return speakerService.getSpeakerById(speakerId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        try {
+            Speaker updated = speakerService.updateSpeaker(speakerId, speaker);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{speakerId}")

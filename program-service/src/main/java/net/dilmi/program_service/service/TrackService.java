@@ -3,6 +3,7 @@ package net.dilmi.program_service.service;
 import net.dilmi.program_service.model.Track;
 import net.dilmi.program_service.repository.TrackRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,17 +27,22 @@ public class TrackService {
         return trackRepository.findById(trackId);
     }
 
+    @Transactional
     public Track createTrack(Track track) {
-        track.setTrackId(UUID.randomUUID());
         track.setCreatedAt(LocalDateTime.now());
         return trackRepository.save(track);
     }
 
+    @Transactional
     public Track updateTrack(UUID trackId, Track updatedTrack) {
-        updatedTrack.setTrackId(trackId);
-        return trackRepository.save(updatedTrack);
+        Track existing = trackRepository.findById(trackId)
+                .orElseThrow(() -> new RuntimeException("Track not found: " + trackId));
+        existing.setEventId(updatedTrack.getEventId());
+        existing.setName(updatedTrack.getName());
+        return trackRepository.save(existing);
     }
 
+    @Transactional
     public void deleteTrack(UUID trackId) {
         trackRepository.deleteById(trackId);
     }
