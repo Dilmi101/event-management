@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata modelVersion="1.1.0">
+  <groupId>net.dilmi</groupId>
+  <artifactId>proto-common</artifactId>
+  <versioning>
+    <lastUpdated>20260719045725</lastUpdated>
+    <snapshot>
+      <timestamp>20260719.045725</timestamp>
+      <buildNumber>1</buildNumber>
+    </snapshot>
+    <snapshotVersions>
+      <snapshotVersion>
+        <extension>module</extension>
+        <value>0.0.1-20260719.045725-1</value>
+        <updated>20260719045725</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <extension>pom</extension>
+        <value>0.0.1-20260719.045725-1</value>
+        <updated>20260719045725</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <extension>jar</extension>
+        <value>0.0.1-20260719.045725-1</value>
+        <updated>20260719045725</updated>
+      </snapshotVersion>
+    </snapshotVersions>
+  </versioning>
+  <version>0.0.1-SNAPSHOT</version>
+</metadata>

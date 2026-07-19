@@ -1,0 +1,189 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "net.dilmi.event_service.grpc";
+option java_outer_classname = "EventServiceProto";
+
+package event_service;
+
+import "google/protobuf/timestamp.proto";
+
+message Event {
+  string event_id = 1;
+  string title = 2;
+  string description = 3;
+  string venue_name = 4;
+  string venue_street = 5;
+  string venue_city = 6;
+  string venue_phone = 7;
+  string event_date = 8;
+  string event_time = 9;
+  double ticket_price = 10;
+  int32 capacity = 11;
+  int32 seats_available = 12;
+  google.protobuf.Timestamp created_at = 13;
+  google.protobuf.Timestamp updated_at = 14;
+}
+
+message GetEventRequest {
+  string event_id = 1;
+}
+
+message ListEventsRequest {}
+
+message ListEventsResponse {
+  repeated Event events = 1;
+}
+
+message CreateEventRequest {
+  string title = 1;
+  string description = 2;
+  string venue_name = 3;
+  string venue_street = 4;
+  string venue_city = 5;
+  string venue_phone = 6;
+  string event_date = 7;
+  string event_time = 8;
+  double ticket_price = 9;
+  int32 capacity = 10;
+  int32 seats_available = 11;
+}
+
+message UpdateEventRequest {
+  string event_id = 1;
+  string title = 2;
+  string description = 3;
+  string venue_name = 4;
+  string venue_street = 5;
+  string venue_city = 6;
+  string venue_phone = 7;
+  string event_date = 8;
+  string event_time = 9;
+  double ticket_price = 10;
+  int32 capacity = 11;
+  int32 seats_available = 12;
+}
+
+message DeleteEventRequest {
+  string event_id = 1;
+}
+
+message DeleteEventResponse {
+  bool success = 1;
+}
+
+service EventService {
+  rpc GetEvent(GetEventRequest) returns (Event);
+  rpc ListEvents(ListEventsRequest) returns (ListEventsResponse);
+  rpc CreateEvent(CreateEventRequest) returns (Event);
+  rpc UpdateEvent(UpdateEventRequest) returns (Event);
+  rpc DeleteEvent(DeleteEventRequest) returns (DeleteEventResponse);
+  rpc ReserveSeats(ReserveSeatsRequest) returns (ReserveSeatsResponse);
+  rpc ReleaseSeats(ReleaseSeatsRequest) returns (ReleaseSeatsResponse);
+}
+
+message ReserveSeatsRequest {
+  string event_id = 1;
+  int32 ticket_count = 2;
+}
+
+message ReserveSeatsResponse {
+  Event event = 1;
+}
+
+message ReleaseSeatsRequest {
+  string event_id = 1;
+  int32 ticket_count = 2;
+}
+
+message ReleaseSeatsResponse {
+  Event event = 1;
+}
+
+// Sponsor messages
+message Sponsor {
+  string sponsor_id = 1;
+  string event_id = 2;
+  string name = 3;
+  string logo_url = 4;
+  google.protobuf.Timestamp created_at = 5;
+}
+
+message GetSponsorRequest {
+  string sponsor_id = 1;
+}
+
+message ListSponsorsRequest {}
+
+message ListSponsorsResponse {
+  repeated Sponsor sponsors = 1;
+}
+
+message CreateSponsorRequest {
+  string event_id = 1;
+  string name = 2;
+  string logo_url = 3;
+}
+
+message UpdateSponsorRequest {
+  string sponsor_id = 1;
+  string event_id = 2;
+  string name = 3;
+  string logo_url = 4;
+}
+
+message DeleteSponsorRequest {
+  string sponsor_id = 1;
+}
+
+message DeleteSponsorResponse {
+  bool success = 1;
+}
+
+service SponsorService {
+  rpc GetSponsor(GetSponsorRequest) returns (Sponsor);
+  rpc ListSponsors(ListSponsorsRequest) returns (ListSponsorsResponse);
+  rpc CreateSponsor(CreateSponsorRequest) returns (Sponsor);
+  rpc UpdateSponsor(UpdateSponsorRequest) returns (Sponsor);
+  rpc DeleteSponsor(DeleteSponsorRequest) returns (DeleteSponsorResponse);
+}
+
+// ContactMessage messages
+message ContactMessage {
+  string message_id = 1;
+  string name = 2;
+  string email = 3;
+  string message = 4;
+  google.protobuf.Timestamp received_at = 5;
+}
+
+message GetContactMessageRequest {
+  string message_id = 1;
+}
+
+message ListContactMessagesRequest {}
+
+message ListContactMessagesResponse {
+  repeated ContactMessage messages = 1;
+}
+
+message CreateContactMessageRequest {
+  string name = 1;
+  string email = 2;
+  string message = 3;
+}
+
+message DeleteContactMessageRequest {
+  string message_id = 1;
+}
+
+message DeleteContactMessageResponse {
+  bool success = 1;
+}
+
+service ContactMessageService {
+  rpc GetContactMessage(GetContactMessageRequest) returns (ContactMessage);
+  rpc ListContactMessages(ListContactMessagesRequest) returns (ListContactMessagesResponse);
+  rpc CreateContactMessage(CreateContactMessageRequest) returns (ContactMessage);
+  rpc DeleteContactMessage(DeleteContactMessageRequest) returns (DeleteContactMessageResponse);
+}

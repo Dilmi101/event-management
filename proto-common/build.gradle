@@ -1,0 +1,60 @@
+plugins {
+    id 'java-library'
+    id 'com.google.protobuf' version '0.9.6'
+    id 'maven-publish'
+}
+
+group = 'net.dilmi'
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+dependencies {
+    api 'com.google.protobuf:protobuf-java:4.34.2'
+    api 'io.grpc:grpc-api:1.80.0'
+    api 'io.grpc:grpc-protobuf:1.80.0'
+    api 'io.grpc:grpc-stub:1.80.0'
+    compileOnly 'jakarta.annotation:jakarta.annotation-api:3.0.0'
+}
+
+protobuf {
+    protoc {
+        artifact = 'com.google.protobuf:protoc:4.34.2'
+    }
+    plugins {
+        grpc {
+            artifact = 'io.grpc:protoc-gen-grpc-java:1.80.0'
+        }
+    }
+    generateProtoTasks {
+        all().configureEach { task ->
+            task.builtins {
+                java {}
+            }
+            task.plugins {
+                grpc {}
+            }
+        }
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url = layout.buildDirectory.dir('repo')
+        }
+    }
+}
