@@ -302,7 +302,7 @@ jsonpath "$.eventDate" == "2026-11-15"
 jsonpath "$.eventTime" == "09:00:00"
 jsonpath "$.ticketPrice" == 299.99
 jsonpath "$.capacity" == 500
-jsonpath "$.seatsAvailable" == 500
+jsonpath "$.seatsAvailable" == 494
 
 # ---------------------------------------------------------------------------
 # 8. Verify: check counts on all list endpoints
@@ -311,24 +311,24 @@ jsonpath "$.seatsAvailable" == 500
 GET http://localhost:8081/api/sponsors
 HTTP 200
 [Asserts]
-jsonpath "$" count == 3
+jsonpath "$[?(@.eventId == '{{event_id}}')]" count == 3
 
 GET http://localhost:8082/api/tracks
 HTTP 200
 [Asserts]
-jsonpath "$" count == 3
+jsonpath "$[?(@.eventId == '{{event_id}}')]" count == 3
 
 GET http://localhost:8082/api/sessions
 HTTP 200
 [Asserts]
-jsonpath "$" count == 5
+jsonpath "$[?(@.eventId == '{{event_id}}')]" count == 5
 
 GET http://localhost:8082/api/speakers
 HTTP 200
 [Asserts]
-jsonpath "$" count == 3
+jsonpath "$[?(@.eventId == '{{event_id}}')]" count == 3
 
 GET http://localhost:8083/api/registrations
 HTTP 200
 [Asserts]
-jsonpath "$" count == 3
+jsonpath "$[?(@.eventId == '{{event_id}}')]" count == 3

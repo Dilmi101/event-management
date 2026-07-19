@@ -3,26 +3,26 @@
   <groupId>net.dilmi</groupId>
   <artifactId>proto-common</artifactId>
   <versioning>
-    <lastUpdated>20260719045725</lastUpdated>
+    <lastUpdated>20260719054842</lastUpdated>
     <snapshot>
-      <timestamp>20260719.045725</timestamp>
+      <timestamp>20260719.054842</timestamp>
       <buildNumber>1</buildNumber>
     </snapshot>
     <snapshotVersions>
       <snapshotVersion>
-        <extension>module</extension>
-        <value>0.0.1-20260719.045725-1</value>
-        <updated>20260719045725</updated>
-      </snapshotVersion>
-      <snapshotVersion>
         <extension>pom</extension>
-        <value>0.0.1-20260719.045725-1</value>
-        <updated>20260719045725</updated>
+        <value>0.0.1-20260719.054842-1</value>
+        <updated>20260719054842</updated>
       </snapshotVersion>
       <snapshotVersion>
         <extension>jar</extension>
-        <value>0.0.1-20260719.045725-1</value>
-        <updated>20260719045725</updated>
+        <value>0.0.1-20260719.054842-1</value>
+        <updated>20260719054842</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <extension>module</extension>
+        <value>0.0.1-20260719.054842-1</value>
+        <updated>20260719054842</updated>
       </snapshotVersion>
     </snapshotVersions>
   </versioning>

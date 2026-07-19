@@ -8,10 +8,12 @@ import net.dilmi.registration_service.repository.RegistrationRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.grpc.Deadline;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class RegistrationService {
@@ -23,6 +25,10 @@ public class RegistrationService {
                                EventServiceGrpc.EventServiceBlockingStub eventServiceStub) {
         this.registrationRepository = registrationRepository;
         this.eventServiceStub = eventServiceStub;
+    }
+
+    private EventServiceGrpc.EventServiceBlockingStub stub() {
+        return eventServiceStub.withDeadline(Deadline.after(10, TimeUnit.SECONDS));
     }
 
     public List<Registration> getAllRegistrations() {
@@ -39,7 +45,7 @@ public class RegistrationService {
                 .setEventId(registration.getEventId().toString())
                 .setTicketCount(registration.getTicketCount())
                 .build();
-        eventServiceStub.reserveSeats(request);
+        stub().reserveSeats(request);
         registration.setRegisteredAt(LocalDateTime.now());
         return registrationRepository.save(registration);
     }
@@ -56,13 +62,13 @@ public class RegistrationService {
                     .setEventId(existing.getEventId().toString())
                     .setTicketCount(diff)
                     .build();
-            eventServiceStub.reserveSeats(request);
+            stub().reserveSeats(request);
         } else if (diff < 0) {
             ReleaseSeatsRequest request = ReleaseSeatsRequest.newBuilder()
                     .setEventId(existing.getEventId().toString())
                     .setTicketCount(-diff)
                     .build();
-            eventServiceStub.releaseSeats(request);
+            stub().releaseSeats(request);
         }
         existing.setEventId(updatedRegistration.getEventId());
         existing.setFirstName(updatedRegistration.getFirstName());
@@ -81,7 +87,7 @@ public class RegistrationService {
                 .setEventId(existing.getEventId().toString())
                 .setTicketCount(existing.getTicketCount())
                 .build();
-        eventServiceStub.releaseSeats(request);
+        stub().releaseSeats(request);
         registrationRepository.deleteById(registrationId);
     }
 }

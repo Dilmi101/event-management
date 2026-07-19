@@ -1,1 +1,4 @@
 .env
+proto-common/build/
+event-service/proto-repo/
+registration-service/proto-repo/

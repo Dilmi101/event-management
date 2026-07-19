@@ -4,7 +4,7 @@ COPY gradlew settings.gradle build.gradle ./
 COPY gradle ./gradle
 RUN chmod +x gradlew && ./gradlew dependencies --no-daemon
 COPY src ./src
-COPY --from=proto-common:latest /repo /repo
+COPY proto-repo /repo
 RUN ./gradlew bootJar --no-daemon -x test
 
 FROM docker.io/library/eclipse-temurin:21-jre-alpine

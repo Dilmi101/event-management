@@ -8,10 +8,9 @@ spring:
     driver-class-name: org.postgresql.Driver
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
+  grpc:
+    server:
+      port: ${GRPC_SERVER_PORT:9092}
 
 server:
   port: ${SERVER_PORT:8082}
-
-grpc:
-  server:
-    port: ${GRPC_SERVER_PORT:9092}
