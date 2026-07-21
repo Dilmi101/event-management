@@ -14,6 +14,18 @@ permissions:
   contents: read
 
 jobs:
+  debug-oidc:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Dump OIDC claims
+        run: |
+          curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" \
+            | jq '.value | fromjson | {sub, aud}'
+
   release:
     runs-on: ubuntu-latest
     strategy:
