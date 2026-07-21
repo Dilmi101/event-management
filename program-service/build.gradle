@@ -16,9 +16,12 @@ java {
 
 repositories {
 	mavenCentral()
+	mavenLocal()
+	maven { url 'file:///repo' }
 }
 
 dependencies {
+	implementation 'net.dilmi:proto-common:0.0.1-SNAPSHOT'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
 	implementation 'org.springframework.boot:spring-boot-starter-grpc-client'

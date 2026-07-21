@@ -1,0 +1,74 @@
+name: Release to ECR
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  AWS_REGION: ap-south-1
+  ECR_REPO: event-management
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - name: event-service
+            context: ./event-service
+            dockerfile: ./event-service/Dockerfile
+          - name: program-service
+            context: ./program-service
+            dockerfile: ./program-service/Dockerfile
+          - name: registration-service
+            context: ./registration-service
+            dockerfile: ./registration-service/Dockerfile
+          - name: event-view-fe
+            context: ./event-view-fe
+            dockerfile: ./event-view-fe/Dockerfile
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Extract version from tag
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+
+      - name: Build proto-common and inject artifacts
+        if: ${{ matrix.service.name != 'event-view-fe' }}
+        run: |
+          docker build -t proto-common:ci ./proto-common
+          docker create --name proto-extract proto-common:ci
+          docker cp proto-extract:/repo ./proto-common/build/repo
+          docker rm proto-extract
+          for svc in event-service program-service registration-service; do
+            rm -rf "$svc/proto-repo"
+            cp -r ./proto-common/build/repo "$svc/proto-repo"
+          done
+
+      - name: Build, tag, and push image to ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          IMAGE_TAG="${{ matrix.service.name }}-$VERSION"
+          LATEST_TAG="${{ matrix.service.name }}-latest"
+          docker build \
+            -t $REGISTRY/$ECR_REPO:$IMAGE_TAG \
+            -t $REGISTRY/$ECR_REPO:$LATEST_TAG \
+            -f ${{ matrix.service.dockerfile }} \
+            ${{ matrix.service.context }}
+          docker push $REGISTRY/$ECR_REPO:$IMAGE_TAG
+          docker push $REGISTRY/$ECR_REPO:$LATEST_TAG
