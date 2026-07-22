@@ -7,7 +7,7 @@ on:
 
 env:
   AWS_REGION: ap-south-1
-  ECR_REPO: event-management
+  ECR_REPO: cwk/event-management
 
 permissions:
   id-token: write
