@@ -3,6 +3,8 @@ kind: Service
 metadata:
   name: event-service
   namespace: event-management
+  labels:
+    app: event-service
 spec:
   selector:
     app: event-service

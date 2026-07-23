@@ -26,6 +26,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-grpc-client'
 	implementation 'org.springframework.boot:spring-boot-starter-grpc-server'
 	implementation 'org.springframework.boot:spring-boot-starter-liquibase'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'io.micrometer:micrometer-registry-prometheus'
 	implementation 'org.postgresql:postgresql'
 	testImplementation 'org.springframework.boot:spring-boot-starter-data-jdbc-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-grpc-client-test'

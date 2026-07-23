@@ -26,12 +26,14 @@ spec:
             - secretRef:
                 name: program-service-db
           livenessProbe:
-            tcpSocket:
+            httpGet:
+              path: /actuator/health/liveness
               port: 8082
             initialDelaySeconds: 30
             periodSeconds: 10
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /actuator/health/readiness
               port: 8082
             initialDelaySeconds: 15
             periodSeconds: 10
