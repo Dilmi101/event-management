@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: registration-service
+  namespace: event-management
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: registration-service
+  template:
+    metadata:
+      labels:
+        app: registration-service
+    spec:
+      containers:
+        - name: registration-service
+          image: 959740417723.dkr.ecr.ap-south-1.amazonaws.com/cwk/event-management:registration-service-latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8083
+            - name: grpc
+              containerPort: 9093
+          env:
+            - name: EVENT_SERVICE_GRPC_ADDRESS
+              value: static://event-service:9091
+          envFrom:
+            - secretRef:
+                name: registration-service-db
+          livenessProbe:
+            tcpSocket:
+              port: 8083
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 8083
+            initialDelaySeconds: 15
+            periodSeconds: 10

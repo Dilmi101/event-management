@@ -1,0 +1,62 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: event-management
+  namespace: event-management
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+spec:
+  ingressClassName: alb
+  rules:
+    - http:
+        paths:
+          - path: /api/events
+            pathType: Prefix
+            backend:
+              service:
+                name: event-service
+                port:
+                  number: 8081
+          - path: /api/sponsors
+            pathType: Prefix
+            backend:
+              service:
+                name: event-service
+                port:
+                  number: 8081
+          - path: /api/contact
+            pathType: Prefix
+            backend:
+              service:
+                name: event-service
+                port:
+                  number: 8081
+          - path: /api/speakers
+            pathType: Prefix
+            backend:
+              service:
+                name: program-service
+                port:
+                  number: 8082
+          - path: /api/sessions
+            pathType: Prefix
+            backend:
+              service:
+                name: program-service
+                port:
+                  number: 8082
+          - path: /api/registrations
+            pathType: Prefix
+            backend:
+              service:
+                name: registration-service
+                port:
+                  number: 8083
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80

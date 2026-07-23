@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: program-service
+  namespace: event-management
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: program-service
+  template:
+    metadata:
+      labels:
+        app: program-service
+    spec:
+      containers:
+        - name: program-service
+          image: 959740417723.dkr.ecr.ap-south-1.amazonaws.com/cwk/event-management:program-service-latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8082
+            - name: grpc
+              containerPort: 9092
+          envFrom:
+            - secretRef:
+                name: program-service-db
+          livenessProbe:
+            tcpSocket:
+              port: 8082
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 8082
+            initialDelaySeconds: 15
+            periodSeconds: 10

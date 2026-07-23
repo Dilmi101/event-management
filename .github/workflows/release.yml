@@ -80,7 +80,17 @@ jobs:
         run: |
           IMAGE_TAG="${{ matrix.service.name }}-$VERSION"
           LATEST_TAG="${{ matrix.service.name }}-latest"
+          BUILD_ARGS=()
+          if [ "${{ matrix.service.name }}" = "event-view-fe" ]; then
+            # Empty strings so the browser uses relative paths and the ALB routes /api/* by prefix
+            BUILD_ARGS=(
+              --build-arg VITE_EVENT_SERVICE_URL=
+              --build-arg VITE_PROGRAM_SERVICE_URL=
+              --build-arg VITE_REGISTRATION_SERVICE_URL=
+            )
+          fi
           docker build \
+            "${BUILD_ARGS[@]}" \
             -t $REGISTRY/$ECR_REPO:$IMAGE_TAG \
             -t $REGISTRY/$ECR_REPO:$LATEST_TAG \
             -f ${{ matrix.service.dockerfile }} \
