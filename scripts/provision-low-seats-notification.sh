@@ -166,7 +166,7 @@ if aws iam get-role --role-name "$CI_ROLE" >/dev/null 2>&1; then
   "Statement": [
     {
       "Effect": "Allow",
-      "Action": ["lambda:UpdateFunctionCode", "lambda:GetFunction"],
+      "Action": ["lambda:UpdateFunctionCode", "lambda:GetFunction", "lambda:GetFunctionConfiguration"],
       "Resource": "arn:aws:lambda:${REGION}:${ACCOUNT_ID}:function:${FUNCTION_NAME}"
     }
   ]
