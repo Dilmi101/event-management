@@ -437,11 +437,13 @@ docker push ${REGISTRY}/${ECR_REPO}:event-view-fe-latest
 
 > **Note**: Since images live in the single shared repo (Step 6/8b), each Deployment's `image:` field must reference `<ACCOUNT_ID>.dkr.ecr.ap-south-1.amazonaws.com/cwk/event-management:<service>-latest` (e.g. `:event-service-latest`) — not a separate per-service repo URI.
 
+> **Note**: `k8s/secrets/` is applied manually here, once. The CI role used by `.github/workflows/release.yml` intentionally has no RBAC on `external-secrets.io` resources, so the pipeline does not re-apply this directory — only re-run this step by hand if you change an `ExternalSecret`/`ClusterSecretStore`.
+
 ```bash
 # Create namespace first
 kubectl apply -f k8s/namespace.yaml
 
-# Create external secrets (ESO syncs from SSM)
+# Create external secrets (ESO syncs from SSM) — one-time, not part of CI/CD
 kubectl apply -f k8s/secrets/
 
 # Deploy backend services

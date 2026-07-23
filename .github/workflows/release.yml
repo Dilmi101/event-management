@@ -120,9 +120,12 @@ jobs:
         run: aws eks update-kubeconfig --name event-management --region ${{ env.AWS_REGION }}
 
       - name: Apply application manifests
+        # k8s/secrets/ (ExternalSecret/ClusterSecretStore CRs) is intentionally
+        # excluded here and applied manually once during cluster bootstrap
+        # (EKS-PROVISIONING.md Step 9) — the CI role doesn't have (and doesn't
+        # need) RBAC on external-secrets.io resources.
         run: |
           kubectl apply -f k8s/namespace.yaml
-          kubectl apply -f k8s/secrets/
           kubectl apply -f k8s/event-service/
           kubectl apply -f k8s/program-service/
           kubectl apply -f k8s/registration-service/
