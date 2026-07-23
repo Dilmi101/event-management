@@ -63,7 +63,7 @@ Browser --fetch POST /api/analytics--> ALB --> analytics-service
 Captured events: event_view | contact_submit | registration
 ```
 
-**Low-seats serverless notification flow (coursework requirement):**
+**Low-seats serverless notification flow:**
 
 ```
 registration-service --gRPC reserveSeats--> event-service
