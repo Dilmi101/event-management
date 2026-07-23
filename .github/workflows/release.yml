@@ -49,6 +49,9 @@ jobs:
           - name: registration-service
             context: ./registration-service
             dockerfile: ./registration-service/Dockerfile
+          - name: analytics-service
+            context: ./analytics-service
+            dockerfile: ./analytics-service/Dockerfile
           - name: event-view-fe
             context: ./event-view-fe
             dockerfile: ./event-view-fe/Dockerfile
@@ -69,7 +72,7 @@ jobs:
         run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
 
       - uses: actions/download-artifact@v4
-        if: ${{ matrix.service.name != 'event-view-fe' }}
+        if: ${{ matrix.service.name != 'event-view-fe' && matrix.service.name != 'analytics-service' }}
         with:
           name: proto-repo
           path: ${{ matrix.service.context }}/proto-repo
@@ -87,6 +90,7 @@ jobs:
               --build-arg VITE_EVENT_SERVICE_URL=
               --build-arg VITE_PROGRAM_SERVICE_URL=
               --build-arg VITE_REGISTRATION_SERVICE_URL=
+              --build-arg VITE_ANALYTICS_SERVICE_URL=
             )
           fi
           docker build \
@@ -126,9 +130,11 @@ jobs:
         # need) RBAC on external-secrets.io resources.
         run: |
           kubectl apply -f k8s/namespace.yaml
+          kubectl apply -f k8s/clickhouse/
           kubectl apply -f k8s/event-service/
           kubectl apply -f k8s/program-service/
           kubectl apply -f k8s/registration-service/
+          kubectl apply -f k8s/analytics-service/
           kubectl apply -f k8s/frontend/
           kubectl apply -f k8s/ingress.yaml
 
@@ -138,12 +144,13 @@ jobs:
             deployment/event-service \
             deployment/program-service \
             deployment/registration-service \
+            deployment/analytics-service \
             deployment/frontend \
             -n event-management
 
       - name: Wait for rollouts to complete
         run: |
-          for d in event-service program-service registration-service frontend; do
+          for d in event-service program-service registration-service analytics-service frontend; do
             kubectl rollout status deployment/$d -n event-management --timeout=180s
           done
 

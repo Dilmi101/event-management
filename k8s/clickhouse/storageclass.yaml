@@ -1,0 +1,16 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: gp3
+# This cluster runs EKS Auto Mode, which ships its own built-in EBS CSI
+# driver (CSIDriver ebs.csi.eks.amazonaws.com) with node topology labels
+# under topology.ebs.csi.eks.amazonaws.com/*. The community aws-ebs-csi-driver
+# addon (provisioner ebs.csi.aws.com) does not recognize those labels and
+# fails PVC provisioning with "no topology key found" — do not install it
+# on this cluster. blockStorage must be enabled on the cluster's Auto Mode
+# storageConfig (it already is here) for this provisioner to work.
+provisioner: ebs.csi.eks.amazonaws.com
+parameters:
+  type: gp3
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Delete

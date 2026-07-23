@@ -14,6 +14,7 @@ ALB (internet-facing)
   ├── /api/speakers/*    ──► program-service:8082
   ├── /api/sessions/*    ──► program-service:8082
   ├── /api/registrations/* ─► registration-service:8083
+  ├── /api/analytics      ──► analytics-service:8085
   └── /*                 ──► frontend:80 (static SPA)
 
 Internal gRPC:
@@ -23,6 +24,9 @@ Databases (single RDS PostgreSQL instance):
   eventdb        (owner: event_user)
   programsdb     (owner: programs_user)
   registrationdb (owner: registration_user)
+
+ClickHouse (self-hosted, in-cluster StatefulSet, single node):
+  analytics.web_events   (owner: analytics user)
 
 Secrets: SSM Parameter Store ──ESO──► K8s Secrets
 ```
@@ -115,6 +119,22 @@ eksctl create iamserviceaccount \
   --namespace kube-system \
   --cluster event-management \
   --attach-policy-arn arn:aws:iam::<ACCOUNT_ID>:policy/AWSLoadBalancerControllerIAMPolicy \
+  --approve \
+  --override-existing-serviceaccounts
+```
+
+### 2d. IRSA service account for the EBS CSI Driver
+
+ClickHouse is the first stateful in-cluster workload in this project (RDS Postgres runs outside
+the cluster), so its PVC needs the AWS EBS CSI driver, which isn't installed by `eksctl create
+cluster` by default. This uses AWS's own managed policy rather than a hand-written one:
+
+```bash
+eksctl create iamserviceaccount \
+  --name ebs-csi-controller-sa \
+  --namespace kube-system \
+  --cluster event-management \
+  --attach-policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy \
   --approve \
   --override-existing-serviceaccounts
 ```
@@ -283,6 +303,38 @@ aws ssm put-parameter \
   --name "/event-management/registration-service/db-password" \
   --value "registration_secret" \
   --type SecureString --overwrite
+
+CLICKHOUSE_PASSWORD='<STRONG_PASSWORD>'   # used in both places below
+
+aws ssm put-parameter \
+  --name "/event-management/clickhouse/db" \
+  --value "analytics" \
+  --type SecureString --overwrite
+
+aws ssm put-parameter \
+  --name "/event-management/clickhouse/username" \
+  --value "analytics" \
+  --type SecureString --overwrite
+
+aws ssm put-parameter \
+  --name "/event-management/clickhouse/password" \
+  --value "$CLICKHOUSE_PASSWORD" \
+  --type SecureString --overwrite
+
+aws ssm put-parameter \
+  --name "/event-management/analytics-service/db-url" \
+  --value "jdbc:clickhouse://clickhouse:8123/analytics" \
+  --type SecureString --overwrite
+
+aws ssm put-parameter \
+  --name "/event-management/analytics-service/db-username" \
+  --value "analytics" \
+  --type SecureString --overwrite
+
+aws ssm put-parameter \
+  --name "/event-management/analytics-service/db-password" \
+  --value "$CLICKHOUSE_PASSWORD" \
+  --type SecureString --overwrite
 ```
 
 ---
@@ -380,6 +432,27 @@ In Grafana:
 - Import dashboard ID `4701` (JVM Micrometer) for each service, plus the bundled "Kubernetes / Compute Resources / Namespace (Pods)" dashboard for pod/node health.
 - Import `k8s/observability/dashboards/event-management-services.json` (Dashboards → New → Import → Upload JSON) for a per-service view of request rate, p95 latency, 5xx error rate, JVM heap, pod availability, and pod restarts.
 
+### 7d. AWS EBS CSI Driver
+
+Not a Helm chart despite the section title — it's installed as an EKS-managed addon, using the
+IRSA role created in Step 2d. Required before the ClickHouse `StatefulSet`'s PVC (`k8s/clickhouse/`)
+can bind, since modern EKS clusters ship no in-tree/default block storage provisioner.
+
+```bash
+eksctl create addon \
+  --name aws-ebs-csi-driver \
+  --cluster event-management \
+  --service-account-role-arn arn:aws:iam::<ACCOUNT_ID>:role/<role-created-in-step-2d> \
+  --force
+```
+
+Verify it's ready before deploying ClickHouse:
+
+```bash
+kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-ebs-csi-driver
+kubectl get storageclass
+```
+
 ---
 
 ## Step 8 — Build & Push Docker Images
@@ -422,11 +495,15 @@ docker push ${REGISTRY}/${ECR_REPO}:program-service-latest
 docker build -t ${REGISTRY}/${ECR_REPO}:registration-service-latest ./registration-service
 docker push ${REGISTRY}/${ECR_REPO}:registration-service-latest
 
+docker build -t ${REGISTRY}/${ECR_REPO}:analytics-service-latest ./analytics-service
+docker push ${REGISTRY}/${ECR_REPO}:analytics-service-latest
+
 # Build frontend with VITE_* as empty strings (browser uses relative paths, ALB routes them)
 docker build \
   --build-arg VITE_EVENT_SERVICE_URL="" \
   --build-arg VITE_PROGRAM_SERVICE_URL="" \
   --build-arg VITE_REGISTRATION_SERVICE_URL="" \
+  --build-arg VITE_ANALYTICS_SERVICE_URL="" \
   -t ${REGISTRY}/${ECR_REPO}:event-view-fe-latest ./event-view-fe
 docker push ${REGISTRY}/${ECR_REPO}:event-view-fe-latest
 ```
@@ -446,10 +523,14 @@ kubectl apply -f k8s/namespace.yaml
 # Create external secrets (ESO syncs from SSM) — one-time, not part of CI/CD
 kubectl apply -f k8s/secrets/
 
+# Deploy ClickHouse (requires the EBS CSI driver from Step 7d)
+kubectl apply -f k8s/clickhouse/
+
 # Deploy backend services
 kubectl apply -f k8s/event-service/
 kubectl apply -f k8s/program-service/
 kubectl apply -f k8s/registration-service/
+kubectl apply -f k8s/analytics-service/
 
 # Deploy frontend
 kubectl apply -f k8s/frontend/
@@ -472,6 +553,10 @@ kubectl get pods -n event-management
 # Check services
 kubectl get svc -n event-management
 
+# Check ClickHouse's PVC bound successfully
+kubectl get pvc -n event-management
+kubectl get pods -n event-management -l app=clickhouse
+
 # Get ALB DNS name
 kubectl get ingress -n event-management event-management -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
 
@@ -487,7 +572,8 @@ Access the application at the ALB DNS name in your browser.
 ## Cleanup
 
 ```bash
-# Delete all K8s resources
+# Delete all K8s resources — cascades to the ClickHouse PVC, and since its
+# StorageClass has reclaimPolicy: Delete, the underlying EBS volume too.
 kubectl delete namespace event-management
 
 # Delete observability stack
@@ -499,6 +585,9 @@ eksctl delete iamserviceaccount --cluster event-management --namespace external-
 
 # Delete ALB controller service account
 eksctl delete iamserviceaccount --cluster event-management --namespace kube-system --name aws-load-balancer-controller
+
+# Delete EBS CSI driver service account
+eksctl delete iamserviceaccount --cluster event-management --namespace kube-system --name ebs-csi-controller-sa
 
 # Delete EKS cluster
 eksctl delete cluster --name event-management

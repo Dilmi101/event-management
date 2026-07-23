@@ -3,10 +3,20 @@ spring:
     name: analytics-service
 
   datasource:
-    url: jdbc:clickhouse://localhost:8123/analytics
-    username: analytics
-    password: analytics123
+    url: ${DB_URL:jdbc:clickhouse://localhost:8123/analytics}
+    username: ${DB_USERNAME:analytics}
+    password: ${DB_PASSWORD:analytics123}
     driver-class-name: com.clickhouse.jdbc.ClickHouseDriver
 
 server:
-  port: 8085
+  port: ${SERVER_PORT:8085}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true

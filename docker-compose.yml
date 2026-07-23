@@ -69,6 +69,40 @@ services:
       event-service:
         condition: service_started
 
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8
+    container_name: clickhouse
+    restart: unless-stopped
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    env_file:
+      - .env
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - ./docker/clickhouse-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--query", "SELECT 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  analytics-service:
+    build:
+      context: ./analytics-service
+      dockerfile: Dockerfile
+    container_name: analytics-service
+    restart: unless-stopped
+    ports:
+      - "8085:8085"
+    environment:
+      DB_URL: jdbc:clickhouse://clickhouse:8123/analytics
+      DB_USERNAME: ${CLICKHOUSE_USER}
+      DB_PASSWORD: ${CLICKHOUSE_PASSWORD}
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+
   frontend:
     build:
       context: ./event-view-fe
@@ -77,6 +111,7 @@ services:
         VITE_EVENT_SERVICE_URL: ""
         VITE_PROGRAM_SERVICE_URL: ""
         VITE_REGISTRATION_SERVICE_URL: ""
+        VITE_ANALYTICS_SERVICE_URL: ""
     container_name: event-view-fe
     restart: unless-stopped
     ports:
@@ -85,6 +120,8 @@ services:
       - event-service
       - program-service
       - registration-service
+      - analytics-service
 
 volumes:
   postgres_data:
+  clickhouse_data:

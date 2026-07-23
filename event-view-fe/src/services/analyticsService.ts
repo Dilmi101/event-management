@@ -1,4 +1,4 @@
-const ANALYTICS_URL = "http://localhost:8085/analytics";
+const ANALYTICS_SERVICE_URL = import.meta.env.VITE_ANALYTICS_SERVICE_URL ?? 'http://localhost:8085';
 
 export async function sendAnalytics(
     eventType: string,
@@ -13,7 +13,7 @@ export async function sendAnalytics(
     };
 
     try {
-        await fetch(ANALYTICS_URL,{
+        await fetch(`${ANALYTICS_SERVICE_URL}/api/analytics`,{
             method:"POST",
             headers:{
                 "Content-Type":"application/json"

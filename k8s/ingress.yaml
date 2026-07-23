@@ -53,6 +53,13 @@ spec:
                 name: registration-service
                 port:
                   number: 8083
+          - path: /api/analytics
+            pathType: Prefix
+            backend:
+              service:
+                name: analytics-service
+                port:
+                  number: 8085
           - path: /
             pathType: Prefix
             backend:

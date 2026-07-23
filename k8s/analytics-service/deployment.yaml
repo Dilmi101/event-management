@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics-service
+  namespace: event-management
+spec:
+  # Initial/baseline replica count only — actual scaling (1-3) is governed
+  # by the HorizontalPodAutoscaler in hpa.yaml. Do not hand-edit this to
+  # "fix" a scaled-up count; the HPA owns spec.replicas after first apply.
+  replicas: 1
+  selector:
+    matchLabels:
+      app: analytics-service
+  template:
+    metadata:
+      labels:
+        app: analytics-service
+    spec:
+      containers:
+        - name: analytics-service
+          image: 959740417723.dkr.ecr.ap-south-1.amazonaws.com/cwk/event-management:analytics-service-latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8085
+          envFrom:
+            - secretRef:
+                name: analytics-service-db
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8085
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8085
+            initialDelaySeconds: 15
+            periodSeconds: 10
