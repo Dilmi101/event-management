@@ -24,9 +24,13 @@ Databases (single RDS PostgreSQL instance):
   eventdb        (owner: event_user)
   programsdb     (owner: programs_user)
   registrationdb (owner: registration_user)
+  metabasedb     (owner: metabase_user)   -- Metabase's own app metadata, not analytics data
 
 ClickHouse (self-hosted, in-cluster StatefulSet, single node):
   analytics.web_events   (owner: analytics user)
+
+Metabase (self-hosted, in-cluster Deployment, port-forward only — no ALB path):
+  reads analytics.web_events from ClickHouse to build dashboards
 
 Secrets: SSM Parameter Store ──ESO──► K8s Secrets
 ```
@@ -248,6 +252,14 @@ CREATE DATABASE registrationdb OWNER registration_user;
 \c registrationdb
 GRANT ALL ON SCHEMA public TO registration_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO registration_user;
+
+-- Metabase's own application metadata DB (dashboards, users, saved questions).
+-- Metabase does not create this itself — it must already exist before the pod boots.
+CREATE USER metabase_user WITH PASSWORD '<STRONG_PASSWORD>';
+CREATE DATABASE metabasedb OWNER metabase_user;
+\c metabasedb
+GRANT ALL ON SCHEMA public TO metabase_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO metabase_user;
 ```
 
 ---
@@ -334,6 +346,38 @@ aws ssm put-parameter \
 aws ssm put-parameter \
   --name "/event-management/analytics-service/db-password" \
   --value "$CLICKHOUSE_PASSWORD" \
+  --type SecureString --overwrite
+
+METABASE_DB_PASSWORD='<STRONG_PASSWORD>'   # matches the metabase_user password set in Step 4c
+
+aws ssm put-parameter \
+  --name "/event-management/metabase/db-host" \
+  --value "${RDS_ENDPOINT}" \
+  --type SecureString --overwrite
+
+aws ssm put-parameter \
+  --name "/event-management/metabase/db-port" \
+  --value "5432" \
+  --type SecureString --overwrite
+
+aws ssm put-parameter \
+  --name "/event-management/metabase/db-dbname" \
+  --value "metabasedb" \
+  --type SecureString --overwrite
+
+aws ssm put-parameter \
+  --name "/event-management/metabase/db-user" \
+  --value "metabase_user" \
+  --type SecureString --overwrite
+
+aws ssm put-parameter \
+  --name "/event-management/metabase/db-pass" \
+  --value "$METABASE_DB_PASSWORD" \
+  --type SecureString --overwrite
+
+aws ssm put-parameter \
+  --name "/event-management/metabase/encryption-key" \
+  --value "$(openssl rand -base64 32)" \
   --type SecureString --overwrite
 ```
 
@@ -526,6 +570,10 @@ kubectl apply -f k8s/secrets/
 # Deploy ClickHouse (requires the EBS CSI driver from Step 7d)
 kubectl apply -f k8s/clickhouse/
 
+# Deploy Metabase (requires the metabase_user/metabasedb from Step 4c to
+# already exist on RDS, or the pod will crash-loop on first boot)
+kubectl apply -f k8s/metabase/
+
 # Deploy backend services
 kubectl apply -f k8s/event-service/
 kubectl apply -f k8s/program-service/
@@ -557,6 +605,10 @@ kubectl get svc -n event-management
 kubectl get pvc -n event-management
 kubectl get pods -n event-management -l app=clickhouse
 
+# Check Metabase came up (may take a minute or two on first boot — it runs
+# app-DB migrations against metabasedb the first time it starts)
+kubectl get pods -n event-management -l app=metabase
+
 # Get ALB DNS name
 kubectl get ingress -n event-management event-management -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
 
@@ -566,6 +618,23 @@ kubectl get externalsecrets -n event-management
 ```
 
 Access the application at the ALB DNS name in your browser.
+
+---
+
+## Step 11 — Access Metabase & Build the Dashboard
+
+Like Grafana, Metabase is an internal admin tool with **no public ALB path** — access it via
+port-forward only (using local port `3001` here since Grafana's port-forward already claims
+`3000` locally):
+
+```bash
+kubectl port-forward -n event-management svc/metabase 3001:3000
+# open http://localhost:3001 — first run walks through Metabase's setup wizard
+```
+
+Full steps to connect ClickHouse as a data source and build the analytics dashboard (Questions,
+charts, dashboard assembly) are in [`METABASE.md`](./METABASE.md) — that part is UI-driven and
+not something `kubectl apply` can do.
 
 ---
 
