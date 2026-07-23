@@ -97,3 +97,34 @@ jobs:
             ${{ matrix.service.context }}
           docker push $REGISTRY/$ECR_REPO:$IMAGE_TAG
           docker push $REGISTRY/$ECR_REPO:$LATEST_TAG
+
+  deploy:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6.1.0
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name event-management --region ${{ env.AWS_REGION }}
+
+      - name: Roll out new images
+        run: |
+          kubectl rollout restart \
+            deployment/event-service \
+            deployment/program-service \
+            deployment/registration-service \
+            deployment/frontend \
+            -n event-management
+
+      - name: Wait for rollouts to complete
+        run: |
+          for d in event-service program-service registration-service frontend; do
+            kubectl rollout status deployment/$d -n event-management --timeout=180s
+          done
