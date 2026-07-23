@@ -19,4 +19,8 @@ public interface EventRepository extends CrudRepository<Event, UUID> {
     @Modifying
     @Query("UPDATE events SET seats_available = seats_available + :ticketCount, updated_at = NOW() WHERE event_id = :eventId")
     void releaseSeats(@Param("eventId") UUID eventId, @Param("ticketCount") int ticketCount);
+
+    @Modifying
+    @Query("UPDATE events SET low_seats_notified_at = NOW() WHERE event_id = :eventId AND low_seats_notified_at IS NULL")
+    int markLowSeatsNotified(@Param("eventId") UUID eventId);
 }

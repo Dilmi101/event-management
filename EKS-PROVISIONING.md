@@ -127,7 +127,42 @@ eksctl create iamserviceaccount \
   --override-existing-serviceaccounts
 ```
 
-### 2d. IRSA service account for the EBS CSI Driver
+### 2d. S3 bucket, Lambda function, and IRSA for event-service low-seats notifications
+
+Coursework requirement: when an event's `seatsAvailable` drops below a threshold, event-service
+triggers a serverless function that writes a notification (event ID, timestamp, remaining seats)
+to S3. This is the **first app-level IRSA role** in the cluster — until now IRSA has only backed
+cluster-infrastructure service accounts (ESO, ALB controller, EBS CSI driver).
+
+Unlike the other IAM setup in this section, this one is scripted rather than copy-pasted —
+run the idempotent bootstrap script (safe to re-run any time, e.g. after rotating the Lambda's
+code or if a resource was deleted out of band):
+
+```bash
+./scripts/provision-low-seats-notification.sh
+```
+
+It creates/verifies, in order: the S3 bucket (`cwk-em-low-seats-notifications-<account-id>`,
+public access blocked, versioning on), the Lambda execution role + inline `s3:PutObject`
+policy, the `event-low-seats-notifier` function itself (from
+`lambda/event-low-seats-notifier/index.js`), the `event-service-irsa-role` (trust scoped to
+`system:serviceaccount:event-management:event-service`, permission scoped to
+`lambda:InvokeFunction` on this one function), and a `lambda:UpdateFunctionCode` grant on the
+CI role (`gh-ecr-push`) so the `deploy-lambda` GitHub Actions job (Step 8/`release.yml`) can
+push future code changes on its own.
+
+> **Note**: `k8s/event-service/serviceaccount.yaml` hardcodes the role ARN this script
+> produces (`arn:aws:iam::<account-id>:role/event-service-irsa-role`). If you run this in a
+> different account, update that manifest's `eks.amazonaws.com/role-arn` annotation to match.
+> The role must exist **before** `k8s/event-service/` is applied (Step 9) or the pod's IRSA
+> token exchange fails — harmless (the Lambda invoke call is caught and logged, seat
+> reservation still succeeds), but the notification won't reach S3 until fixed.
+>
+> Lambda code changes after the initial bootstrap deploy automatically via CI on every tagged
+> release (`deploy-lambda` job in `.github/workflows/release.yml`) — no manual redeploy step
+> needed day-to-day.
+
+### 2e. IRSA service account for the EBS CSI Driver
 
 ClickHouse is the first stateful in-cluster workload in this project (RDS Postgres runs outside
 the cluster), so its PVC needs the AWS EBS CSI driver, which isn't installed by `eksctl create
@@ -479,14 +514,14 @@ In Grafana:
 ### 7d. AWS EBS CSI Driver
 
 Not a Helm chart despite the section title — it's installed as an EKS-managed addon, using the
-IRSA role created in Step 2d. Required before the ClickHouse `StatefulSet`'s PVC (`k8s/clickhouse/`)
+IRSA role created in Step 2e. Required before the ClickHouse `StatefulSet`'s PVC (`k8s/clickhouse/`)
 can bind, since modern EKS clusters ship no in-tree/default block storage provisioner.
 
 ```bash
 eksctl create addon \
   --name aws-ebs-csi-driver \
   --cluster event-management \
-  --service-account-role-arn arn:aws:iam::<ACCOUNT_ID>:role/<role-created-in-step-2d> \
+  --service-account-role-arn arn:aws:iam::<ACCOUNT_ID>:role/<role-created-in-step-2e> \
   --force
 ```
 
@@ -559,6 +594,11 @@ docker push ${REGISTRY}/${ECR_REPO}:event-view-fe-latest
 > **Note**: Since images live in the single shared repo (Step 6/8b), each Deployment's `image:` field must reference `<ACCOUNT_ID>.dkr.ecr.ap-south-1.amazonaws.com/cwk/event-management:<service>-latest` (e.g. `:event-service-latest`) — not a separate per-service repo URI.
 
 > **Note**: `k8s/secrets/` is applied manually here, once. The CI role used by `.github/workflows/release.yml` intentionally has no RBAC on `external-secrets.io` resources, so the pipeline does not re-apply this directory — only re-run this step by hand if you change an `ExternalSecret`/`ClusterSecretStore`.
+
+> **Note**: `k8s/event-service/serviceaccount.yaml` requires the `event-service-irsa-role` IAM
+> role from Step 2d to already exist — run that step first, or the pod will start without valid
+> AWS credentials and the low-seats Lambda invocation will silently fail (logged, but the
+> reservation itself still succeeds).
 
 ```bash
 # Create namespace first
@@ -657,6 +697,16 @@ eksctl delete iamserviceaccount --cluster event-management --namespace kube-syst
 
 # Delete EBS CSI driver service account
 eksctl delete iamserviceaccount --cluster event-management --namespace kube-system --name ebs-csi-controller-sa
+
+# Delete low-seats notification Lambda, its bucket, and both IAM roles (Step 2d)
+aws lambda delete-function --function-name event-low-seats-notifier --region ap-south-1
+aws s3 rm s3://cwk-em-low-seats-notifications-<ACCOUNT_ID> --recursive
+aws s3api delete-bucket --bucket cwk-em-low-seats-notifications-<ACCOUNT_ID> --region ap-south-1
+aws iam delete-role-policy --role-name event-low-seats-notifier-exec-role --policy-name s3-write-notifications
+aws iam detach-role-policy --role-name event-low-seats-notifier-exec-role --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+aws iam delete-role --role-name event-low-seats-notifier-exec-role
+aws iam delete-role-policy --role-name event-service-irsa-role --policy-name invoke-low-seats-notifier
+aws iam delete-role --role-name event-service-irsa-role
 
 # Delete EKS cluster
 eksctl delete cluster --name event-management

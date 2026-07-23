@@ -7,3 +7,5 @@ databaseChangeLog:
       file: db/changelog/003-create-sponsors-table.yaml
   - include:
       file: db/changelog/004-create-contact-messages-table.yaml
+  - include:
+      file: db/changelog/005-add-low-seats-notified-at.yaml

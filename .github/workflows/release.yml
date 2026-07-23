@@ -102,6 +102,32 @@ jobs:
           docker push $REGISTRY/$ECR_REPO:$IMAGE_TAG
           docker push $REGISTRY/$ECR_REPO:$LATEST_TAG
 
+  deploy-lambda:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6.1.0
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy event-low-seats-notifier Lambda code
+        # AWS-side resources (function, execution role, IRSA role, S3 bucket) are
+        # bootstrapped once via scripts/provision-low-seats-notification.sh — this
+        # job only pushes code changes to the already-existing function.
+        working-directory: ./lambda/event-low-seats-notifier
+        run: |
+          zip function.zip index.js
+          aws lambda update-function-code \
+            --function-name event-low-seats-notifier \
+            --zip-file fileb://function.zip \
+            --region ${{ env.AWS_REGION }}
+          aws lambda wait function-updated \
+            --function-name event-low-seats-notifier \
+            --region ${{ env.AWS_REGION }}
+
   deploy:
     needs: release
     runs-on: ubuntu-latest

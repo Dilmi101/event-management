@@ -15,6 +15,11 @@ spring:
 server:
   port: ${SERVER_PORT:8081}
 
+notifications:
+  low-seats:
+    threshold: ${LOW_SEATS_THRESHOLD:10}
+    lambda-function-name: ${LAMBDA_FUNCTION_NAME:event-low-seats-notifier}
+
 management:
   endpoints:
     web:

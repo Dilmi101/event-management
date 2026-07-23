@@ -1,7 +1,11 @@
 package net.dilmi.event_service.service;
 
 import net.dilmi.event_service.model.Event;
+import net.dilmi.event_service.notification.LowSeatsNotifier;
 import net.dilmi.event_service.repository.EventRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,10 +17,17 @@ import java.util.UUID;
 @Service
 public class EventService {
 
-    private final EventRepository eventRepository;
+    private static final Logger log = LoggerFactory.getLogger(EventService.class);
 
-    public EventService(EventRepository eventRepository) {
+    private final EventRepository eventRepository;
+    private final LowSeatsNotifier lowSeatsNotifier;
+
+    @Value("${notifications.low-seats.threshold:10}")
+    private int lowSeatsThreshold;
+
+    public EventService(EventRepository eventRepository, LowSeatsNotifier lowSeatsNotifier) {
         this.eventRepository = eventRepository;
+        this.lowSeatsNotifier = lowSeatsNotifier;
     }
 
     public List<Event> getAllEvents() {
@@ -70,8 +81,23 @@ public class EventService {
             }
             throw new RuntimeException("Failed to reserve seats for event: " + eventId);
         }
-        return eventRepository.findById(eventId)
+
+        Event updated = eventRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event not found after reservation: " + eventId));
+
+        try {
+            if (updated.getSeatsAvailable() != null && updated.getSeatsAvailable() < lowSeatsThreshold) {
+                int notifyRows = eventRepository.markLowSeatsNotified(eventId);
+                if (notifyRows == 1) {
+                    lowSeatsNotifier.notifyLowSeats(eventId, updated.getSeatsAvailable(), lowSeatsThreshold);
+                }
+            }
+        } catch (Exception e) {
+            // Notification/debounce failures must never fail the reservation itself.
+            log.error("Low-seats notification check failed for event {}: {}", eventId, e.getMessage(), e);
+        }
+
+        return updated;
     }
 
     @Transactional

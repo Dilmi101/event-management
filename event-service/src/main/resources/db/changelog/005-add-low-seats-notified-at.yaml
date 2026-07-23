@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-add-low-seats-notified-at
+      author: dilmi
+      changes:
+        - addColumn:
+            tableName: events
+            columns:
+              - column:
+                  name: low_seats_notified_at
+                  type: timestamp
+                  constraints:
+                    nullable: true

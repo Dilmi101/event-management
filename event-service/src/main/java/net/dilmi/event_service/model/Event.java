@@ -50,13 +50,17 @@ public class Event {
     @Column("updated_at")
     private LocalDateTime updatedAt;
 
+    @Column("low_seats_notified_at")
+    private LocalDateTime lowSeatsNotifiedAt;
+
     public Event() {}
 
     public Event(UUID eventId, String title, String description, String venueName,
                  String venueStreet, String venueCity, String venuePhone,
                  LocalDate eventDate, LocalTime eventTime, BigDecimal ticketPrice,
                  Integer capacity, Integer seatsAvailable,
-                 LocalDateTime createdAt, LocalDateTime updatedAt) {
+                 LocalDateTime createdAt, LocalDateTime updatedAt,
+                 LocalDateTime lowSeatsNotifiedAt) {
         this.eventId = eventId;
         this.title = title;
         this.description = description;
@@ -71,6 +75,7 @@ public class Event {
         this.seatsAvailable = seatsAvailable;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.lowSeatsNotifiedAt = lowSeatsNotifiedAt;
     }
 
     public UUID getEventId() { return eventId; }
@@ -114,4 +119,7 @@ public class Event {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public LocalDateTime getLowSeatsNotifiedAt() { return lowSeatsNotifiedAt; }
+    public void setLowSeatsNotifiedAt(LocalDateTime lowSeatsNotifiedAt) { this.lowSeatsNotifiedAt = lowSeatsNotifiedAt; }
 }

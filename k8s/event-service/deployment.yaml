@@ -16,6 +16,7 @@ spec:
       labels:
         app: event-service
     spec:
+      serviceAccountName: event-service
       containers:
         - name: event-service
           image: 959740417723.dkr.ecr.ap-south-1.amazonaws.com/cwk/event-management:event-service-latest
@@ -25,6 +26,13 @@ spec:
               containerPort: 8081
             - name: grpc
               containerPort: 9091
+          env:
+            - name: LOW_SEATS_THRESHOLD
+              value: "10"
+            - name: LAMBDA_FUNCTION_NAME
+              value: event-low-seats-notifier
+            - name: AWS_REGION
+              value: ap-south-1
           envFrom:
             - secretRef:
                 name: event-service-db
