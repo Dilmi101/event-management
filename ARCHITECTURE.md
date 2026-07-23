@@ -240,6 +240,9 @@ Each Secret is consumed via `envFrom.secretRef` in its matching Deployment/State
   |               registration-service/ analytics-service/           |
   |    kubectl apply -f k8s/frontend/                                 |
   |    kubectl apply -f k8s/ingress.yaml                              |
+  |    kubectl exec clickhouse-0 -- clickhouse-client < each file in |
+  |        clickhouse-migrations/*.sql (idempotent, no tracking       |
+  |        table -- ClickHouse has no Liquibase equivalent)           |
   |    kubectl rollout restart deployment/* -n event-management      |
   |    kubectl rollout status   deployment/* -n event-management     |
   |    helm upgrade kube-prometheus-stack + apply servicemonitors    |

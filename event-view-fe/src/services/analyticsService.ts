@@ -16,12 +16,14 @@ function generateSessionId(): string {
 
 export async function sendAnalytics(
     eventType: string,
-    page: string
+    page: string,
+    pageTitle?: string
 ) {
     try {
         const payload = {
             eventType,
             page,
+            pageTitle: pageTitle ?? '',
             sessionId: generateSessionId(),
             browser: navigator.userAgent
         };

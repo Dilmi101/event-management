@@ -18,6 +18,7 @@ public class AnalyticsService {
         repository.save(
                 request.getEventType(),
                 request.getPage(),
+                request.getPageTitle() != null ? request.getPageTitle() : "",
                 request.getSessionId(),
                 request.getBrowser()
         );

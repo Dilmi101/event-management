@@ -9,6 +9,8 @@ public class AnalyticsRequest {
 
     private String page;
 
+    private String pageTitle;
+
     private String sessionId;
 
     private String browser;

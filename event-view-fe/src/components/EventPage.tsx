@@ -53,8 +53,10 @@ export default function EventPage() {
   }, [loadData])
 
   useEffect(() => {
-      sendAnalytics("event_view", eventId ?? "unknown");
-  }, [eventId]);
+      if (event) {
+        sendAnalytics("event_view", eventId ?? "unknown", event.title);
+      }
+  }, [event, eventId]);
 
   if (!eventId) {
     return (

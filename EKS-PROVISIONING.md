@@ -610,6 +610,16 @@ kubectl apply -f k8s/secrets/
 # Deploy ClickHouse (requires the EBS CSI driver from Step 7d)
 kubectl apply -f k8s/clickhouse/
 
+# Apply ClickHouse schema migrations. k8s/clickhouse/configmap.yaml's init script only
+# runs on a brand-new/empty data directory, never against an already-running instance --
+# clickhouse-migrations/*.sql is how schema changes reach a live cluster instead. Every
+# file must be idempotent (IF NOT EXISTS / IF EXISTS everywhere); this same loop is what
+# release.yml's `deploy` job runs automatically on every tagged release.
+kubectl wait --for=condition=ready pod -l app=clickhouse -n event-management --timeout=180s
+for f in clickhouse-migrations/*.sql; do
+  kubectl exec -i -n event-management clickhouse-0 -- clickhouse-client --multiquery < "$f"
+done
+
 # Deploy Metabase (requires the metabase_user/metabasedb from Step 4c to
 # already exist on RDS, or the pod will crash-loop on first boot)
 kubectl apply -f k8s/metabase/

@@ -165,6 +165,20 @@ jobs:
           kubectl apply -f k8s/frontend/
           kubectl apply -f k8s/ingress.yaml
 
+      - name: Apply ClickHouse schema migrations
+        # ClickHouse has no migration tool (unlike Liquibase for the Postgres-backed
+        # services) and its docker-entrypoint-initdb.d scripts (k8s/clickhouse/configmap.yaml)
+        # only run once against a brand-new, empty data directory — they never touch the
+        # already-running instance. clickhouse-migrations/*.sql closes that gap: each file
+        # must be safe to re-run (IF NOT EXISTS / IF EXISTS everywhere), applied in order,
+        # every release, directly against the live table.
+        run: |
+          kubectl wait --for=condition=ready pod -l app=clickhouse -n event-management --timeout=180s
+          for f in clickhouse-migrations/*.sql; do
+            echo "Applying $f"
+            kubectl exec -i -n event-management clickhouse-0 -- clickhouse-client --multiquery < "$f"
+          done
+
       - name: Roll out new images
         run: |
           kubectl rollout restart \
