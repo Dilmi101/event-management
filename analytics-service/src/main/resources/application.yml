@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: analytics-service
+
+  datasource:
+    url: jdbc:clickhouse://localhost:8123/analytics
+    username: analytics
+    password: analytics123
+    driver-class-name: com.clickhouse.jdbc.ClickHouseDriver
+
+server:
+  port: 8085
