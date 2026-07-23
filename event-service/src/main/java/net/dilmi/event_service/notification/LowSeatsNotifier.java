@@ -26,7 +26,13 @@ public class LowSeatsNotifier {
         this.functionName = functionName;
     }
 
-    public void notifyLowSeats(UUID eventId, int seatsAvailable, int threshold) {
+    /**
+     * @return true if the invoke request was accepted (InvocationType.EVENT only confirms
+     * acceptance, not that the Lambda itself ran successfully) -- false if it never even
+     * reached that point (credentials, network, permissions), so the caller can undo its
+     * debounce marker and let a future reservation retry.
+     */
+    public boolean notifyLowSeats(UUID eventId, int seatsAvailable, int threshold) {
         try {
             String payload = String.format(
                     "{\"eventId\":\"%s\",\"seatsAvailable\":%d,\"threshold\":%d,\"timestamp\":\"%s\"}",
@@ -41,9 +47,11 @@ public class LowSeatsNotifier {
             lambdaClient.invoke(request);
             log.info("Triggered low-seats Lambda for event {} (seatsAvailable={}, threshold={})",
                     eventId, seatsAvailable, threshold);
+            return true;
         } catch (Exception e) {
             // A failed notification must never affect the seat reservation itself.
             log.error("Failed to invoke low-seats Lambda for event {}: {}", eventId, e.getMessage(), e);
+            return false;
         }
     }
 }

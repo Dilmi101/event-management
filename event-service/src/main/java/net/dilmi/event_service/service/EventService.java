@@ -89,7 +89,12 @@ public class EventService {
             if (updated.getSeatsAvailable() != null && updated.getSeatsAvailable() < lowSeatsThreshold) {
                 int notifyRows = eventRepository.markLowSeatsNotified(eventId);
                 if (notifyRows == 1) {
-                    lowSeatsNotifier.notifyLowSeats(eventId, updated.getSeatsAvailable(), lowSeatsThreshold);
+                    boolean sent = lowSeatsNotifier.notifyLowSeats(eventId, updated.getSeatsAvailable(), lowSeatsThreshold);
+                    if (!sent) {
+                        // Let a future reservation retry instead of permanently burning
+                        // this event's one notification on a failed invoke.
+                        eventRepository.clearLowSeatsNotified(eventId);
+                    }
                 }
             }
         } catch (Exception e) {
