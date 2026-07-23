@@ -337,6 +337,8 @@ helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
 
 Prometheus + Grafana + Alertmanager + kube-state-metrics + node-exporter, deployed in-cluster. `event-service`, `program-service` and `registration-service` expose `/actuator/prometheus` (Spring Boot Actuator + Micrometer); each has a matching `ServiceMonitor` under `k8s/observability/`.
 
+> **Handled by CI/CD from here on**: the `deploy` job in `.github/workflows/release.yml` re-applies every manifest under `k8s/` (not just a rollout restart) and runs the `helm upgrade --install` for this stack on every tagged release, so it stays in sync automatically. The commands below are only needed for the first manual bootstrap of a brand-new cluster, or if you're debugging outside the pipeline. The pipeline needs one more repo secret: **`GRAFANA_ADMIN_PASSWORD`** (Settings → Secrets and variables → Actions) — set it before the first push of a `v*` tag.
+
 ```bash
 # Grafana admin credentials — don't ship the chart's default admin/prom-operator
 kubectl create namespace observability

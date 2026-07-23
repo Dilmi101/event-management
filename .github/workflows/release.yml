@@ -102,6 +102,8 @@ jobs:
     needs: release
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6.1.0
         with:
@@ -111,8 +113,21 @@ jobs:
       - name: Set up kubectl
         uses: azure/setup-kubectl@v4
 
+      - name: Set up helm
+        uses: azure/setup-helm@v4
+
       - name: Update kubeconfig
         run: aws eks update-kubeconfig --name event-management --region ${{ env.AWS_REGION }}
+
+      - name: Apply application manifests
+        run: |
+          kubectl apply -f k8s/namespace.yaml
+          kubectl apply -f k8s/secrets/
+          kubectl apply -f k8s/event-service/
+          kubectl apply -f k8s/program-service/
+          kubectl apply -f k8s/registration-service/
+          kubectl apply -f k8s/frontend/
+          kubectl apply -f k8s/ingress.yaml
 
       - name: Roll out new images
         run: |
@@ -128,3 +143,23 @@ jobs:
           for d in event-service program-service registration-service frontend; do
             kubectl rollout status deployment/$d -n event-management --timeout=180s
           done
+
+      - name: Deploy observability stack
+        run: |
+          kubectl create namespace observability --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl create secret generic grafana-admin-credentials \
+            -n observability \
+            --from-literal=admin-user=admin \
+            --from-literal=admin-password="${{ secrets.GRAFANA_ADMIN_PASSWORD }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo update
+
+          helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+            --namespace observability \
+            -f k8s/observability/kube-prometheus-stack-values.yaml \
+            --wait --timeout 5m
+
+          kubectl apply -f k8s/observability/servicemonitors.yaml
