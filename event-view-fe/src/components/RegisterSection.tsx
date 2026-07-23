@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { submitRegistration } from '../api/eventApi'
+import { sendAnalytics } from '../services/analyticsService'
 
 interface Props {
   eventId: string
@@ -11,20 +12,34 @@ export default function RegisterSection({ eventId }: Props) {
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setSubmitting(true)
-    try {
-      await submitRegistration({ ...form, eventId, ticketCount: 1 })
-      setDone(true)
-      setForm({ firstName: '', lastName: '', phone: '', email: '' })
-    } catch {
-      setError('Registration failed. Please try again.')
-    } finally {
-      setSubmitting(false)
-    }
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
+  setError('')
+  setSubmitting(true)
+
+  try {
+    await submitRegistration({ ...form, eventId, ticketCount: 1 })
+
+    // Send analytics only after successful registration
+    await sendAnalytics(
+      "registration_submit",
+      eventId
+    )
+
+    setDone(true)
+    setForm({
+      firstName: '',
+      lastName: '',
+      phone: '',
+      email: ''
+    })
+
+  } catch {
+    setError('Registration failed. Please try again.')
+  } finally {
+    setSubmitting(false)
   }
+}
 
   return (
     <section id="register">

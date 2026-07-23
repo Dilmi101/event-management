@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { submitContact } from '../api/eventApi'
+import { sendAnalytics } from '../services/analyticsService'
 
 export default function ContactSection() {
   const [form, setForm] = useState({ name: '', email: '', message: '' })
@@ -7,20 +8,31 @@ export default function ContactSection() {
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setSubmitting(true)
-    try {
-      await submitContact(form)
-      setDone(true)
-      setForm({ name: '', email: '', message: '' })
-    } catch {
-      setError('Message failed to send. Please try again.')
-    } finally {
-      setSubmitting(false)
-    }
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
+  setError('')
+  setSubmitting(true)
+
+  try {
+    await submitContact(form)
+
+    // Send analytics without affecting the user experience
+    sendAnalytics("contact_submit", "contact")
+      .catch(err => console.error("Analytics failed:", err))
+
+    setDone(true)
+    setForm({
+      name: '',
+      email: '',
+      message: ''
+    })
+
+  } catch {
+    setError('Message failed to send. Please try again.')
+  } finally {
+    setSubmitting(false)
   }
+}
 
   return (
     <section id="contact">

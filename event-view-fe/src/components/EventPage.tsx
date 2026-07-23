@@ -15,6 +15,7 @@ import VenueSection from './VenueSection'
 import SponsorsSection from './SponsorsSection'
 import ContactSection from './ContactSection'
 import FooterSection from './FooterSection'
+import { sendAnalytics } from "../services/analyticsService";
 
 export default function EventPage() {
   const { eventId } = useParams<{ eventId: string }>()
@@ -50,6 +51,10 @@ export default function EventPage() {
   useEffect(() => {
     loadData()
   }, [loadData])
+
+  useEffect(() => {
+      sendAnalytics("event_view", eventId ?? "unknown");
+  }, [eventId]);
 
   if (!eventId) {
     return (
