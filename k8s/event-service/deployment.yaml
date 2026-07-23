@@ -4,6 +4,9 @@ metadata:
   name: event-service
   namespace: event-management
 spec:
+  # Initial/baseline replica count only — actual scaling (1-3) is governed
+  # by the HorizontalPodAutoscaler in hpa.yaml. Do not hand-edit this to
+  # "fix" a scaled-up count; the HPA owns spec.replicas after first apply.
   replicas: 1
   selector:
     matchLabels:
@@ -25,6 +28,12 @@ spec:
           envFrom:
             - secretRef:
                 name: event-service-db
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 512Mi
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness

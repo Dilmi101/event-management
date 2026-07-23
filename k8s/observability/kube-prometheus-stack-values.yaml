@@ -16,13 +16,12 @@ prometheus:
         memory: 384Mi
       limits:
         memory: 768Mi
-    storageSpec:
-      volumeClaimTemplate:
-        spec:
-          accessModes: ["ReadWriteOnce"]
-          resources:
-            requests:
-              storage: 5Gi
+    # No working PVC provisioner on this cluster (no EBS CSI driver addon
+    # installed, and the in-tree kubernetes.io/aws-ebs provisioner it falls
+    # back to has no controller to service claims). Coursework-scale demo
+    # doesn't need metrics to survive a pod restart, so run on emptyDir
+    # instead of chasing PVC binding. Omitting storageSpec makes the
+    # Prometheus Operator use emptyDir by default.
 
 alertmanager:
   alertmanagerSpec:
@@ -47,9 +46,12 @@ grafana:
   resources:
     requests:
       cpu: 50m
-      memory: 128Mi
+      memory: 192Mi
     limits:
-      memory: 256Mi
+      # Observed steady-state usage is ~400Mi (Grafana's newer unified
+      # storage/search indexing is not lightweight) — 256Mi was too tight
+      # and risked an OOM kill under any load spike.
+      memory: 512Mi
   # No public ingress — access via port-forward for the viva demo
   # (see EKS-PROVISIONING.md, Step 7c).
   service:
