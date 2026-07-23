@@ -30,6 +30,7 @@ dependencies {
 	implementation 'io.micrometer:micrometer-registry-prometheus'
 	implementation 'org.postgresql:postgresql'
 	implementation 'software.amazon.awssdk:lambda:2.42.40'
+	implementation 'software.amazon.awssdk:sts:2.42.40'
 	testImplementation 'org.springframework.boot:spring-boot-starter-data-jdbc-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-grpc-client-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-grpc-server-test'
